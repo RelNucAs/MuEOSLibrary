@@ -1,0 +1,57 @@
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Miscillaneous
+.idea/
+.DS_Store
+nu_rates
+*.o
+*/.ipynb_checkpoints/*
+
+# Plots
+*.png
+*.jpg
+
+# Text files
+*.txt
+
+# Compiled Python files
+*.pyc
+
+# EOS tables
+*.dat
+*.tab
+
+# G++ compile
+./tests/compile/*
+./eos_table/compile/*
