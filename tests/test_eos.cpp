@@ -12,6 +12,7 @@
 #include "interp.hpp"
 #include "eos_fermions.hpp"
 #include "find_eta.hpp"
+#include "eos_tabulated.hpp"
 
 using namespace constants;
 using namespace std;
@@ -96,7 +97,12 @@ void test_lep_eos(const double nLep, const double temp) {
 
 int main (){
 	double n_e, n_mu, temp;
-	
+	EOS_leptons eos;	
+	eos.ReadTableFromFile("/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module/eos_table/electrons/eos_electrons_complete_leo.txt");
+	const double * test = eos.GetRawLogNumberDensity();
+	for (int i=0; i<eos.m_nl; i++) {
+		cout << pow(10.,test[i]) << endl;
+	}
 	n_e = 1.e-03; //fm-3
 	temp = 1.e+00; //MeV
 
@@ -110,7 +116,11 @@ int main (){
 	cout << "Testing accuracy of (anti)muon EOS in a single (n_mu,T) point:" << endl;
 	cout << "n_mu = " << n_mu << " fm-3, T = " << temp << " MeV (theta = " << temp/mmu << ")" << endl << endl;
 	test_lep_eos<2>(n_mu, temp); //2: muons
-
+	
+	std::array<double,4> tmp1 = der_cs2<1>(ne, temp);
+	std::array<double,4> tmp2 = der_cs2_num<1>(ne, temp);
+	for (int i=0;i<4;i++) cout << "der_" << i << " = " << tmp1[i] << endl;
+	for (int i=0;i<4;i++) cout << "der_" << i << " = " << tmp2[i] << endl;
 	return 0;
 }
 

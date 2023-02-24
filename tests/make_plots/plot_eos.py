@@ -1,69 +1,110 @@
+import math
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 
-HR = True
+def col_levels(a,b):
+    low = math.floor(np.log10(a))
+    upp = math.floor(np.log10(b)) 
+    if ((upp-low)%2 == 0):
+        n = int((upp-low)/2)
+    else:
+        n = int((upp-low+1)/2)
+        low -= 1
+    return [low,upp,n]
 
-#grid parameters
-nne = 700
-nt = 150
+def pad_to_divide(a,b):
+    low = math.floor(np.log10(a))
+    upp = math.floor(np.log10(b))
+    i = 0
+    while(i == 0):
+        if ((upp-low)%4 == 0):
+            n = int((upp-low)/4)
+            i = 1
+        else:
+            upp += 1
+    return [low,upp,n]
 
-if HR:
-    res = '_HR'
-    nne = nne*2
-    nt  = nt*2
+me = 0.510998928 #MeV
+mmu = 105.6583745 #MeV
+MeV = 1.602176634E-06
+
+species = 2
+if (species == 1):
+    sp = 'electrons'
+    n1 = 700
+    mL = me
+elif (species == 2):
+    sp = 'muons'
+    n1 = 750
+    mL = mmu
+
+HR = False
+if HR: 
+    res = "_HR"
 else:
-    res = ''
+    res = ""
 
-amu_g = 1.66054e-24
-yemin = 5.e-3
-yemax = 5.5e-1
-denmin = 5.e+3
-denmax = 2.e+16
-ne_min = (yemin*denmin)/(amu_g*1.e39)
-ne_max = (yemax*denmax)/(amu_g*1.e39)
-t_min = 5.e-02
-t_max = 1.05e+2
+abs_path = "/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module/"
+table_folder = abs_path + "eos_table/"
+plot_folder = abs_path + "tests/output/"
 
-#number density array
-ne_edges = np.logspace(np.log10(ne_min),np.log10(ne_max),num=nne+1)
-ne_array = np.array([0.5*(ne_edges[i]+ne_edges[i+1]) for i in range(nne)])
+complete_file = table_folder + sp + '/eos_'+sp+'_complete_leo.txt' #with_eta_ele.txt'
+ne  = np.loadtxt(complete_file,skiprows=0,max_rows=1,dtype=int)
+nt  = np.loadtxt(complete_file,skiprows=1,max_rows=1,dtype=int)
+ne_array = 10.**(np.loadtxt(complete_file,skiprows=2,max_rows=1,dtype=float))
+t_array  = 10.**(np.loadtxt(complete_file,skiprows=3,max_rows=1,dtype=float))
+mu  = np.loadtxt(complete_file,skiprows=4+n1*0,max_rows=n1,unpack=True,dtype=float)
+n   = np.loadtxt(complete_file,skiprows=4+n1*1,max_rows=n1,unpack=True,dtype=float)
+a_n = np.loadtxt(complete_file,skiprows=4+n1*2,max_rows=n1,unpack=True,dtype=float)
+P   = np.loadtxt(complete_file,skiprows=4+n1*3,max_rows=n1,unpack=True,dtype=float)
+a_P = np.loadtxt(complete_file,skiprows=4+n1*4,max_rows=n1,unpack=True,dtype=float)
+e   = np.loadtxt(complete_file,skiprows=4+n1*5,max_rows=n1,unpack=True,dtype=float)
+a_e = np.loadtxt(complete_file,skiprows=4+n1*6,max_rows=n1,unpack=True,dtype=float)
+s   = np.loadtxt(complete_file,skiprows=4+n1*7,max_rows=n1,unpack=True,dtype=float)
+a_s = np.loadtxt(complete_file,skiprows=4+n1*8,max_rows=n1,unpack=True,dtype=float)
 
-#temperature array
-t_edges = np.logspace(np.log10(t_min) ,np.log10(t_max),num=nt+1)
-t_array = np.array([0.5*(t_edges[i]+t_edges[i+1]) for i in range(nt)])
+[X, Y] = np.meshgrid(ne_array,t_array)
+therm_leo = np.array([P+a_P, e+a_e, s+a_s])
+#therm_leo = np.where(therm_leo>0.,therm_leo,1.e-50)
+#print(np.amin(therm_leo[3]))
 
-#import data
-ne_rand, t_rand = np.loadtxt("input_entries"+res+".txt",unpack=True)
-first  = np.loadtxt("first_method"+res+".txt",unpack=True)
-second = np.loadtxt("second_method"+res+".txt",unpack=True)
-third  = np.loadtxt("third_method"+res+".txt",unpack=True)
+titles = [r'Pressure $P_{L}$', r'Int. energy $e_{L}$', r'Entropy $s_{L}$']
 
-#reshape arrays
-first  = [np.reshape(therm,(nne-1,nt-1)) for therm in first]
-second = [np.reshape(therm,(nne-1,nt-1)) for therm in second]
-third  = [np.reshape(therm,(nne-1,nt-1)) for therm in third]
+#plot EOS comparison of sum particles + antiparticles
+fig, axs = plt.subplots(1, 3, sharex='all', sharey='all', figsize=(15,3.5))
+plt.suptitle('Plot summed EOS: '+sp)
+for i in range(therm_leo.shape[0]):
+    ax = axs[i]
+    tmp = np.transpose(therm_leo[i])
+    tmp = therm_leo[i]
+    #cx = ax.pcolormesh(ne_rand,t_rand,tmp,norm=colors.LogNorm(vmin=1.e-5,vmax=1.e-1),shading='gouraud')
+    cx = ax.contourf(ne_array,t_array,tmp,norm=colors.LogNorm(vmin=np.amin(tmp),vmax=np.amax(tmp)),extend='both') #,levels=np.logspace(-5,0,num=6),extend='both')
+    plt.colorbar(cx,ax=ax)
+    ax.set_title(titles[i])
+    ax.set_xlabel(r'$n_L$ [fm$^{-3}$]')
+axs[0].set_xscale('log')
+axs[0].set_yscale('log')
+axs[0].set_ylabel(r'$T$ [MeV]')
+plt.subplots_adjust(top=0.85,bottom=0.1,right=0.8,left=0.1,wspace=0.1)
+plt.savefig(plot_folder + sp + "/plot_eos_sum_"+sp+res+".png",dpi=200,bbox_inches='tight')
+plt.close()
 
-[mu1, p1, e1, s1, a_p1, a_e1, a_s1] = first
-[mu2, p2, e2, s2, a_p2, a_e2, a_s2] = second
-[mu3, p3, e3, s3, a_p3, a_e3, a_s3] = third
+exit()
 
-ne_rand = np.reshape(ne_rand,(nt-1,nne-1))
-t_rand  = np.reshape(t_rand,(nt-1,nne-1))
+#plot for presentation
+fig = plt.figure(figsize=(4.6,3.7))
+tmp = therm_leo[0]*1.E-39/MeV
+cx = plt.pcolormesh(ne_array,t_array,tmp,norm=colors.LogNorm(vmin=np.amin(tmp),vmax=np.amax(tmp)),shading='gouraud')
+#cx = ax.contourf(ne_array,t_array,tmp,norm=colors.LogNorm(vmin=np.amin(tmp),vmax=np.amax(tmp)),extend='both') #,levels=np.logspace(-5,0,num=6),extend='both')
+cbar = plt.colorbar(cx)
+cbar.set_label(r'[${\rm MeV}\,{\rm fm}^{-3}$]')
+#plt.title(titles[0])
+plt.title(r"Pressure:$\quad\mu^+$ + $\mu^-$")
+plt.xlabel(r'$n_L$ [fm$^{-3}$]')
+plt.xscale('log')
+plt.yscale('log')
+plt.ylabel(r'$T$ [MeV]')
+plt.savefig(plot_folder + sp + "/plot_pres_"+sp+res+".png",dpi=200,bbox_inches='tight')
+plt.close()
 
-titles = [r'Chemical potential $\mu_e$', r'Electron pressure $P_{e^-}$', r'Electron internal energy $e_{e^-}$', r'Electron entropy $s_{e^-}$', r'Positron pressure $P_{e^+}$', r'Positron internal energy $e^+$', r'Positron entropy $s_{e^+}$']
-
-total = [first, second, third]
-
-#plot figure
-for i in range(1,len(first)):
-    fig = plt.figure(i-1)
-    plt.suptitle(titles[i])
-    plt.pcolormesh(ne_rand,t_rand,first[i],norm=colors.LogNorm(vmin=1.e-5, vmax=np.amax(first[i])),shading='gouraud')
-    plt.xlabel(r'$n_e$ [fm$^{-3}$]')
-    plt.ylabel(r'$T$ [MeV]')
-    plt.xscale('log')
-    plt.yscale('log')
-    plt.colorbar()
-    plt.savefig("plot_eos_first_"+res+"%d.png" %i)
-    plt.close()

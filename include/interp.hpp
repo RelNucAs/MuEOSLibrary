@@ -32,7 +32,7 @@ struct EOScomplete {
 	int nt; //number of temperature points
 	std::vector<double> nL; //density
 	std::vector<double> t; //temperature
-	std::array<std::vector<double>,9> eos_table;
+	std::array<std::vector<double>,13> eos_table;
 	//i=0: chemical potential of particles
 	//i=1: number density of particles 
 	//i=2: number density of antiparticles 
@@ -59,6 +59,6 @@ void setd(double d, std::vector<double> d_arr, int* idx, double* r);
 
 double eos_tintep(double d, double t, std::vector<double> &d_arr, std::vector<double> &t_arr, std::vector<double> &y);
 
-std::array<double,9> eos_interp(const double d, const double t, const struct EOScomplete &EOSin);
+std::array<double,13> eos_interp(const double d, const double t, const struct EOScomplete &EOSin);
 
 

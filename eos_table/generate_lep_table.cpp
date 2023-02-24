@@ -90,6 +90,7 @@ void make_lep_table() {
         std::vector<double>   t_array;
 
 	std::vector<std::array<double,9>> eos_out;
+	std::vector<std::array<double,4>> der_out;
 
         string eta_filename      = abs_path + "eos_table/" + sp + "/eos_" + sp + "_leo"+res+".txt";
         string complete_filename = abs_path + "eos_table/" + sp + "/eos_" + sp + "_complete_leo"+res+".txt";
@@ -142,6 +143,7 @@ void make_lep_table() {
                         Ieta << eta << " ";
 
 			eos_out.push_back(eos_ferm_onthefly(eta, temp, species));
+			der_out.push_back(der_cs2_num<species>(nLep, temp));
 		}
                 Ieta << "\n";
 	}
@@ -219,6 +221,39 @@ void make_lep_table() {
 		}
 		Itot << "\n";
 	}
+
+        for (int i=0;i<n1;i++) {
+                for (int j=0;j<n2;j++) {
+                        //dP/dn derivative;
+                        Itot << der_out[n2*i+j][0] << " ";
+                }
+                Itot << "\n";
+        }
+        
+	for (int i=0;i<n1;i++) {
+                for (int j=0;j<n2;j++) {
+                        //ds/dn derivative;
+                        Itot << der_out[n2*i+j][1] << " ";
+                }
+                Itot << "\n";
+        }
+
+        for (int i=0;i<n1;i++) {
+                for (int j=0;j<n2;j++) {
+                        //dP/dt derivative;
+                        Itot << der_out[n2*i+j][2] << " ";
+                }
+                Itot << "\n";
+        }
+
+        for (int i=0;i<n1;i++) {
+                for (int j=0;j<n2;j++) {
+                        //ds/dt derivative;
+                        Itot << der_out[n2*i+j][3] << " ";
+                }
+                Itot << "\n";
+        }
+
 
 	Itot.close();
         cout << "Done!" << endl << endl;

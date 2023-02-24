@@ -3,7 +3,7 @@
 #include <string>
 
 struct eos_table_dim {int nne; int nnm; int nt;};
-struct eos_table_limits {const double den_min; const double den_max; const double y_min; const double y_max; const double t_min; const double t_max; const double eta_min; const double eta_max;};
+struct eos_table_limits {const double n_min; const double n_max; const double y_min; const double y_max; const double t_min; const double t_max; const double eta_min; const double eta_max;};
 
 namespace parameters
 {
@@ -29,9 +29,9 @@ namespace parameters
 
 	//fermionic eos
 	//electrons
-	const struct eos_table_limits e_tab_lim  = {5.e+03, 2.e+16, 5.e-03, 5.5e-01, 5.e-02, 1.05e+02, -2.3e+04, 2.3e+04}; 
+	const struct eos_table_limits e_tab_lim  = {1.00e-12, 1.90e+00, 1.00e-02, 6.00e-01, 1.00e-01, 1.58e+02, -2.3e+04, 2.3e+04}; 
 	//muons
-	const struct eos_table_limits mu_tab_lim = {5.e-08, 5.e-01, 1.e+08,  2.e+16, 5.e-02, 1.05e+02, -2.3e+04, 5.0e+04}; //1.3e+04
+	const struct eos_table_limits mu_tab_lim = {1.00e-12, 1.90e+00, 5.e-08, 5.e-01, 1.00e-01, 1.58e+02, -2.3e+04, 5.0e+04}; //1.3e+04
 					   //den_min, den_max, y_min,   y_max,  t_min,    t_max,  eta_min,  eta_max
 
 

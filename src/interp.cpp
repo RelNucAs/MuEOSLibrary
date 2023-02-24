@@ -311,6 +311,54 @@ struct EOScomplete read_total_table(const int sp) {
 	output.eos_table[7] = tmp;
 	tmp.clear();
 
+        for (i=0;i<n1;i++) {
+                getline(EOSinput, EOSline);
+                std::stringstream s5(EOSline);
+                for (j=0;j<n2;j++) {
+                        s5 >> number;
+                        tmp.push_back(number);
+                }
+        }
+
+        output.eos_table[9] = tmp;
+        tmp.clear();
+
+        for (i=0;i<n1;i++) {
+                getline(EOSinput, EOSline);
+                std::stringstream s5(EOSline);
+                for (j=0;j<n2;j++) {
+                        s5 >> number;
+                        tmp.push_back(number);
+                }
+        }
+
+        output.eos_table[10] = tmp;
+        tmp.clear();
+
+        for (i=0;i<n1;i++) {
+                getline(EOSinput, EOSline);
+                std::stringstream s5(EOSline);
+                for (j=0;j<n2;j++) {
+                        s5 >> number;
+                        tmp.push_back(number);
+                }
+        }
+
+        output.eos_table[11] = tmp;
+        tmp.clear();
+
+        for (i=0;i<n1;i++) {
+                getline(EOSinput, EOSline);
+                std::stringstream s5(EOSline);
+                for (j=0;j<n2;j++) {
+                        s5 >> number;
+                        tmp.push_back(number);
+                }
+        }
+
+        output.eos_table[12] = tmp;
+        tmp.clear();
+
 	EOSinput.close();
     	return output;
  }
@@ -496,7 +544,7 @@ double eos_tintep(double d, double t, std::vector<double> &d_arr, std::vector<do
         return yintp;
 }
 
-std::array<double,9> eos_interp(const double d, const double t, const struct EOScomplete &EOSin) {
+std::array<double,13> eos_interp(const double d, const double t, const struct EOScomplete &EOSin) {
 
 //     input:
 //    d ... density [g/cm^3]
@@ -508,14 +556,14 @@ std::array<double,9> eos_interp(const double d, const double t, const struct EOS
         //int nne = EOSin.nL.size();
         int nt  = EOSin.t.size();
 	
-	std::array<double,9> y;
+	std::array<double,13> y;
 
         set_idx(d,EOSin.nL,id,rd);
         set_idx(t,EOSin.t ,it,rt);
 
 
 //.....interpolate.......................................................
-	for (int i=0;i<9;i++) {
+	for (int i=0;i<13;i++) {
 		y[i] = (1.-rd)*( (1.-rt)*EOSin.eos_table[i][nt*id + it]
          	    +                rt *EOSin.eos_table[i][nt*id + it+1] )
          	    +      rd *( (1.-rt)*EOSin.eos_table[i][nt*(id+1) + it]

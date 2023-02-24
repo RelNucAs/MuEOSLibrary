@@ -18,6 +18,7 @@
 #include "interp.hpp"
 #include "find_eta.hpp"
 #include "eos_fermions.hpp"
+#include "eos_tabulated.hpp"
 
 using namespace std;
 using namespace std::chrono;
@@ -59,7 +60,8 @@ int main (){
         struct EOSeta eta_table = read_eta_table(sp);
         struct EOScomplete EOS_table = read_total_table(sp);
 	
-
+	EOS_leptons eos;
+	eos.ReadTableFromFile("/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module/eos_table/electrons/eos_electrons_complete_leo.txt");
 
 	//Initialization of random number generator
 	printf("Measuring numerical performance of EOS module, number of iterations: %d\n\n", niter);
@@ -75,8 +77,6 @@ int main (){
 		n_arr.push_back(ne_min + r1*dn);
 		t_arr.push_back(t_min  + r2*dt);
 	}
-
-
 
 
 	std::cout << std::setprecision(5);
@@ -120,12 +120,14 @@ int main (){
 	for (int i=0; i<niter; i++) {
 		ne = n_arr[i];
 		t  = t_arr[i];
-		lep_EOS = eos_ferm_array<3,sp>(ne, t, eta_table, EOS_table);
+		//lep_EOS = eos_ferm_array<3,sp>(ne, t, eta_table, EOS_table);
+		std::array<double,EOS_leptons::NVARS> eos.ComputeFullEOS(ne, t, 1.);
 	}
 	stop = high_resolution_clock::now();
 	//for (int i=0; i<9; i++) printf("EOS_array[%d] = %.10e\n", i, lep_EOS[i]);
-	duration = duration_cast<milliseconds>(stop - begin);
-	cout << "Elapsed time, third method: " << duration.count()*1.e-3 << " s" << endl << endl;
+	//duration = duration_cast<microseconds>(stop - begin);
+ 	std::chrono::duration<double> diff = stop - begin;
+	cout << "Elapsed time, third method: " << std::setprecision(2) << diff.count() << " s" << endl << endl;
 
 	return 0;
 }
