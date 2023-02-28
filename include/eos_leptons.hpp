@@ -5,6 +5,7 @@
 //  \brief Defines EOSTable, which stores information from a tabulated
 //         equation of state
 
+#include <array>
 
 class EOS_leptons {
   public:
@@ -92,7 +93,8 @@ class EOS_leptons {
     double Mdsdt(double n, double T, double *Y);
     
     /// Calculate the full leptonic EOS using.
-    //std::array<double,NVARS> ComputeFullEOS(double n, double T, double Y);
+    std::array<double,NVARS> ComputeFullElectronEOS(double n, double T, double *Y);
+    std::array<double,NVARS> ComputeFullMuonEOS(double n, double T, double *Y);
 
   public:
     /// Reads the table file.
@@ -159,7 +161,8 @@ class EOS_leptons {
     void weight_idx_ltm(double *w0, double *w1, int *it, double log_t) const;
 
     /// Low level evaluation function for entire EOS, not intended for outside use
-    //std::array<double,NVARS> eval_all_at_lnt(double ln, double lT) const;
+    std::array<double,NVARS> eval_all_el_at_lnt(double ln, double lT) const;
+    std::array<double,NVARS> eval_all_mu_at_lnt(double ln, double lT) const;
  
     double mu_check(const bool check, const double value);
 

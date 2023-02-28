@@ -74,7 +74,7 @@ class EOS_baryons {
 
     /// Get the baryon mass
     double const GetBaryonMass() const {
-      return mb;
+      return m_bar;
     }
 
     // Indexing used to access the data
@@ -83,7 +83,7 @@ class EOS_baryons {
     }
 
     /// Check if the EOS has been initialized properly.
-    inline bool IsInitialized() const {
+    inline bool IsBarInitialized() const {
       return m_initialized;
     }
 
@@ -114,7 +114,7 @@ class EOS_baryons {
     double * m_table;
 
   private:
-    double mb;
+    double m_bar;
 
     bool m_initialized;
 };

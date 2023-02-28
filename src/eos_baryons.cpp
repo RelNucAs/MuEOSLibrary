@@ -45,37 +45,37 @@ EOS_baryons::~EOS_baryons() {
 
 double EOS_baryons::BarEnergy(double n, double T, double *Y) {
   assert (m_initialized);
-  return exp(eval_at_nty(BLOGE, n, T, Y[0]));
+  return exp(eval_at_nty(BLOGE, n, T, Y[0]+Y[1]));
 }
 
 double EOS_baryons::BarPressure(double n, double T, double *Y) {
   assert (m_initialized);
-  return exp(eval_at_nty(BLOGP, n, T, Y[0]));
+  return exp(eval_at_nty(BLOGP, n, T, Y[0]+Y[1]));
 }
 
 double EOS_baryons::BarEntropy(double n, double T, double *Y) {
   assert (m_initialized);
-  return eval_at_nty(BENT, n, T, Y[0]);
+  return eval_at_nty(BENT, n, T, Y[0]+Y[1]);
 }
 
 double EOS_baryons::BardPdn(double n, double T, double *Y) {
   assert (m_initialized);
-  return eval_at_nty(BDPDN, n, T, Y[0]);
+  return eval_at_nty(BDPDN, n, T, Y[0]+Y[1]);
 }
 
 double EOS_baryons::Bardsdn(double n, double T, double *Y) {
   assert (m_initialized);
-  return eval_at_nty(BDSDN, n, T, Y[0]);
+  return eval_at_nty(BDSDN, n, T, Y[0]+Y[1]);
 }
 
 double EOS_baryons::BardPdT(double n, double T, double *Y) {
   assert (m_initialized);
-  return eval_at_nty(BDPDT, n, T, Y[0]);
+  return eval_at_nty(BDPDT, n, T, Y[0]+Y[1]);
 }
 
 double EOS_baryons::BardsdT(double n, double T, double *Y) {
   assert (m_initialized);
-  return eval_at_nty(BDSDT, n, T, Y[0]);
+  return eval_at_nty(BDSDT, n, T, Y[0]+Y[1]);
 }
 
 void EOS_baryons::ReadBarTableFromFile(std::string fname) {
@@ -140,7 +140,7 @@ void EOS_baryons::ReadBarTableFromFile(std::string fname) {
   // the neutron mass is used as the baryon mass in CompOSE
   ierr = H5LTread_dataset_double(file_id, "mn", scratch);
     MYH5CHECK(ierr);
-  mb = scratch[0];
+  m_bar = scratch[0];
 
   // Read other thermodynamics quantities
   // -------------------------------------------------------------------------
@@ -163,7 +163,7 @@ void EOS_baryons::ReadBarTableFromFile(std::string fname) {
   for (int iy = 0; iy < m_ny; ++iy) {
   for (int it = 0; it < m_nt; ++it) {
     m_table[index(BMUB, in, iy, it)] =
-      mb*(scratch[index(0, in, iy, it)] + 1);
+      m_bar*(scratch[index(0, in, iy, it)] + 1);
   }}}
 
   ierr = H5LTread_dataset_double(file_id, "Q4", scratch);
@@ -171,7 +171,7 @@ void EOS_baryons::ReadBarTableFromFile(std::string fname) {
   for (int in = 0; in < m_nn; ++in) {
   for (int iy = 0; iy < m_ny; ++iy) {
   for (int it = 0; it < m_nt; ++it) {
-    m_table[index(BMUQ, in, iy, it)] = mb*scratch[index(0, in, iy, it)];
+    m_table[index(BMUQ, in, iy, it)] = m_bar*scratch[index(0, in, iy, it)];
   }}}
 
   //ierr = H5LTread_dataset_double(file_id, "Q5", scratch);
@@ -179,7 +179,7 @@ void EOS_baryons::ReadBarTableFromFile(std::string fname) {
   //for (int in = 0; in < m_nn; ++in) {
   //for (int iy = 0; iy < m_ny; ++iy) {
   //for (int it = 0; it < m_nt; ++it) {
-  //  m_table[index(ECMUL, in, iy, it)] = mb*scratch[index(0, in, iy, it)];
+  //  m_table[index(ECMUL, in, iy, it)] = m_bar*scratch[index(0, in, iy, it)];
   //}}}
 
   ierr = H5LTread_dataset_double(file_id, "Q7", scratch);
@@ -188,7 +188,7 @@ void EOS_baryons::ReadBarTableFromFile(std::string fname) {
   for (int iy = 0; iy < m_ny; ++iy) {
   for (int it = 0; it < m_nt; ++it) {
     m_table[index(BLOGE, in, iy, it)] =
-      log(mb*(scratch[index(0, in, iy, it)] + 1)) + m_log_nb[in];
+      log(m_bar*(scratch[index(0, in, iy, it)] + 1)) + m_log_nb[in];
   }}}
 
   ierr = H5LTread_dataset_double(file_id, "dPdn", scratch);

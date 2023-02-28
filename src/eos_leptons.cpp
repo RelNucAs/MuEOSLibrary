@@ -176,10 +176,14 @@ double EOS_leptons::Mdsdt(double n, double T, double *Y) {
   //return eval_mu_at_nty(ID_DSDT, n, T, Y[id_mu]);
 }
 
-//std::array<double,EOS_leptons::NVARS> EOS_leptons::ComputeFullEOS(double n, double T, double Y) {
-//  return eval_all_at_lnt(log(n*Y),log(T));
-//}
+std::array<double,EOS_leptons::NVARS> EOS_leptons::ComputeFullElectronEOS(double n, double T, double *Y) {
+  return eval_all_el_at_lnt(log(n*Y[id_e]),log(T));
+}
 
+std::array<double,EOS_leptons::NVARS> EOS_leptons::ComputeFullMuonEOS(double n, double T, double *Y) {
+  assert(m_mu_initialized);
+  return eval_all_mu_at_lnt(log(n*Y[id_mu]),log(T));
+}
 
 void EOS_leptons::ReadETableFromFile(std::string fname) {
   // Open input file
@@ -568,20 +572,39 @@ double EOS_leptons::eval_mu_at_lnty(int iv, double log_n, double log_t) const {
            wt1 * m_mu_table[mu_index(iv, in+1, it+1)]);
 }
 
-//std::array<double,EOS_leptons::NVARS> EOS_leptons::eval_all_at_lnt(double log_n, double log_t) const {
-  //int in, it;
-  //double wn0, wn1, wt0, wt1;
-  //std::array<double,EOS_leptons::NVARS> eos_out;
+std::array<double,EOS_leptons::NVARS> EOS_leptons::eval_all_el_at_lnt(double log_n, double log_t) const {
+  int in, it;
+  double wn0, wn1, wt0, wt1;
+  std::array<double,EOS_leptons::NVARS> eos_out;
 
-  //weight_idx_ln(&wn0, &wn1, &in, log_n);
-  //weight_idx_lt(&wt0, &wt1, &it, log_t);
-  //cout << NVARS << endl;
-  //for (int iv=0; iv<NVARS; iv++) {
-  //   eos_out[iv] = wn0 * (wt0 * m_table[index(iv, in+0, it+0)]   +
-  //                        wt1 * m_table[index(iv, in+0, it+1)])  +
-  //                 wn1 * (wt0 * m_table[index(iv, in+1, it+0)]   +
-  //                        wt1 * m_table[index(iv, in+1, it+1)]);
-  //}
-  //return eos_out;
-//}
+  weight_idx_lne(&wn0, &wn1, &in, log_n);
+  weight_idx_lte(&wt0, &wt1, &it, log_t);
+  
+  for (int iv=0; iv<NVARS; iv++) {
+     eos_out[iv] = wn0 * (wt0 * m_el_table[el_index(iv, in+0, it+0)]   +
+                          wt1 * m_el_table[el_index(iv, in+0, it+1)])  +
+                   wn1 * (wt0 * m_el_table[el_index(iv, in+1, it+0)]   +
+                          wt1 * m_el_table[el_index(iv, in+1, it+1)]);
+  }
+  return eos_out;
+}
+
+std::array<double,EOS_leptons::NVARS> EOS_leptons::eval_all_mu_at_lnt(double log_n, double log_t) const {
+  int in, it;
+  double wn0, wn1, wt0, wt1;
+  std::array<double,EOS_leptons::NVARS> eos_out;
+
+  weight_idx_lnm(&wn0, &wn1, &in, log_n);
+  weight_idx_ltm(&wt0, &wt1, &it, log_t);
+
+  for (int iv=0; iv<NVARS; iv++) {
+     eos_out[iv] = wn0 * (wt0 * m_mu_table[mu_index(iv, in+0, it+0)]   +
+                          wt1 * m_mu_table[mu_index(iv, in+0, it+1)])  +
+                   wn1 * (wt0 * m_mu_table[mu_index(iv, in+1, it+0)]   +
+                          wt1 * m_mu_table[mu_index(iv, in+1, it+1)]);
+  }
+  return eos_out;
+}
+
+
 

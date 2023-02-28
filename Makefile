@@ -36,7 +36,7 @@ run: test_performance test_eos
 	$(COMPILE_DIR)test_eos_performance; $(COMPILE_DIR)test_eos
 
 test_performance: $(OBJECTS) $(COMPILE_DIR)test_eos_performance.o
-	$(CXX) $(RFLAGS) $(INCLUDE) $(OBJECTS) $(COMPILE_DIR)test_eos_performance.o -o $(COMPILE_DIR)test_eos_performance
+	$(CXX) $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) $(OBJECTS) $(COMPILE_DIR)test_eos_performance.o -o $(COMPILE_DIR)test_eos_performance $(H5_LIB) $(H5_FLAGS)
 
 test_eos: $(OBJECTS) $(COMPILE_DIR)test_eos.o
 	$(CXX) $(RFLAGS) $(INCLUDE) $(OBJECTS) $(COMPILE_DIR)test_eos.o -o $(COMPILE_DIR)test_eos
