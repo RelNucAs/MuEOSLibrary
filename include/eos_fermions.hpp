@@ -1,8 +1,12 @@
 #pragma once
+
+#include <iostream>
+
 #include "find_eta.hpp"
 #include "interp.hpp"
 #include "constants.hpp"
 #include "complete_FG.hpp"
+#include "eos_leptons.hpp"
 
 using namespace constants;
 
@@ -120,7 +124,8 @@ std::array<double,9> eos_ferm_array(const double nLep, const double temp, struct
                 return eos_array;
         } else if constexpr(eos_method == 1) {
                 double guess = find_guess_eta<species>(1.e39*nLep, temp);
-                double eta = rtsafe<species>(1.e39*nLep, temp, guess);
+		std::cout << 1.e39*nLep << std::endl;
+		double eta = rtsafe<species>(1.e39*nLep, temp, guess);
                 return eos_ferm_onthefly(eta, temp, species);
                 //return eos_ferm_fromNR<species>(nLep, t);
         } else if constexpr(eos_method == 2) {
@@ -132,6 +137,7 @@ std::array<double,9> eos_ferm_array(const double nLep, const double temp, struct
                 return eos_ferm_onthefly(eta, temp, species);
         }
 }
+
 
 template<int species>
 std::array<double,4> der_cs2(const double nLep, const double temp) {
@@ -159,8 +165,8 @@ std::array<double,4> der_cs2(const double nLep, const double temp) {
         const double a_f12 = compute_res(a_eta, theta, 0.5);
         const double a_f32 = compute_res(a_eta, theta, 1.5);
         const double a_f52 = compute_res(a_eta, theta, 2.5);
-	const double a_f12_dn = compute_res_ed(eta, theta, 0.5);
-	const double a_f32_dn = compute_res_ed(eta, theta, 1.5);
+	const double a_f12_dn = compute_res_ed(a_eta, theta, 0.5);
+	const double a_f32_dn = compute_res_ed(a_eta, theta, 1.5);
 
 	const double a_f12_dT = (a_f32_dn - 1.5*a_f12) / theta;
 	const double a_f32_dT = (a_f32 - 4.*a_f12_dT) / (2.*theta);
@@ -173,7 +179,7 @@ std::array<double,4> der_cs2(const double nLep, const double temp) {
 	const double dn = f12_dn+a_f12_dn + theta*(f32_dn+a_f32_dn);
 	der_array[0] = mL[species]/3. * theta * (2.*(f32_dn-a_f32_dn) + theta*(f52_dn-a_f52_dn)) / dn;
 	der_array[1] = (-f12+a_f12-eta*f12_dn+a_eta*a_f12_dn+5./3.*(f32_dn-a_f32_dn) - theta*(f32-a_f32+eta*f32_dn-a_eta*a_f32_dn-4./3.*(f52_dn-a_f52_dn))) / dn;
-	der_array[1] = der_array[1] - s/n;
+	//der_array[1] = der_array[1] - s/n;
 	der_array[2] = K3[species] * pow(theta,1.5) * (5.*(f32+a_f32) + theta*(3.5*(f52+a_f52)+2.*(f32_dT+a_f32_dT)) + theta*theta*(f52_dT+a_f52_dT));
 	der_array[3] = K[species]/mL[species] * pow(theta,0.5) * (-1.5*(eta*f12+a_eta*a_f12) + 2.5*(f32+a_f32)
 						+ theta*(-2.5*(eta*f32+a_eta*a_f32) + 10./3.*(f52*a_f52) - (eta*f12_dT+a_eta*a_f12_dT) 

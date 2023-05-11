@@ -8,6 +8,7 @@
 #include <limits>
 #include <sstream>
 #include <stdexcept>
+#include <iostream>
 
 #include <hdf5.h>
 #include <hdf5_hl.h>
@@ -28,6 +29,7 @@ EOS_baryons::EOS_baryons():
   m_id_log_t(numeric_limits<double>::quiet_NaN()),
   m_id_yq(numeric_limits<double>::quiet_NaN()),
   m_nn(0), m_nt(0), m_ny(0),
+  Pmin(0),
   m_log_nb(nullptr),
   m_log_t(nullptr),
   m_yq(nullptr),
@@ -50,7 +52,7 @@ double EOS_baryons::BarEnergy(double n, double T, double *Y) {
 
 double EOS_baryons::BarPressure(double n, double T, double *Y) {
   assert (m_initialized);
-  return exp(eval_at_nty(BLOGP, n, T, Y[0]+Y[1]));
+  return exp(eval_at_nty(BLOGP, n, T, Y[0]+Y[1])) - Pmin;
 }
 
 double EOS_baryons::BarEntropy(double n, double T, double *Y) {
@@ -149,8 +151,19 @@ void EOS_baryons::ReadBarTableFromFile(std::string fname) {
   for (int inb = 0; inb < m_nn; ++inb) {
   for (int iyq = 0; iyq < m_ny; ++iyq) {
   for (int it = 0; it < m_nt; ++it) {
+    Pmin = min(Pmin,exp(m_log_nb[inb])*scratch[index(0, inb, iyq, it)]);
+  }}}
+  Pmin = fabs(Pmin) + 1.e-10;
+
+  cout << "Minimum Pressure = " << Pmin << endl;
+
+  for (int inb = 0; inb < m_nn; ++inb) {
+  for (int iyq = 0; iyq < m_ny; ++iyq) {
+  for (int it = 0; it < m_nt; ++it) {
     m_table[index(BLOGP, inb, iyq, it)] =
-        log(scratch[index(0, inb, iyq, it)]) + m_log_nb[inb];
+        //log(scratch[index(0, inb, iyq, it)]) + m_log_nb[inb];
+        log(exp(m_log_nb[inb])*scratch[index(0, inb, iyq, it)] + Pmin);
+    //cout << m_table[index(BLOGP, inb, iyq, it)] << endl;
   }}}
 
   ierr = H5LTread_dataset_double(file_id, "Q2", scratch);
@@ -270,4 +283,24 @@ double EOS_baryons::eval_at_lnty(int iv, double log_n, double log_t, double yq) 
                   wt1 * m_table[index(iv, in+1, iy+0, it+1)])  +
            wy1 * (wt0 * m_table[index(iv, in+1, iy+1, it+0)]   +
                   wt1 * m_table[index(iv, in+1, iy+1, it+1)]));
+}
+
+
+double EOS_baryons::eval_at_nty_new(int iv, double n, double t, double yq) const {
+  int in, iy, it;
+  double wn0, wn1, wy0, wy1, wt0, wt1;
+
+  weight_idx_ln(&wn0, &wn1, &in, log(n));
+  weight_idx_yq(&wy0, &wy1, &iy, yq);
+  weight_idx_lt(&wt0, &wt1, &it, log(t));
+
+  return
+    pow(m_table[index(iv, in+0, iy+0, it+0)], wn0*wy0*wt0) *
+    pow(m_table[index(iv, in+0, iy+0, it+1)], wn0*wy0*wt1) *
+    pow(m_table[index(iv, in+0, iy+1, it+0)], wn0*wy1*wt0) *
+    pow(m_table[index(iv, in+0, iy+1, it+1)], wn0*wy1*wt1) *
+    pow(m_table[index(iv, in+1, iy+0, it+0)], wn1*wy0*wt0) *
+    pow(m_table[index(iv, in+1, iy+0, it+1)], wn1*wy0*wt1) *
+    pow(m_table[index(iv, in+1, iy+1, it+0)], wn1*wy1*wt0) *
+    pow(m_table[index(iv, in+1, iy+1, it+1)], wn1*wy1*wt1);
 }

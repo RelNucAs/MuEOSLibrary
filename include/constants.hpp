@@ -7,7 +7,7 @@ namespace constants
 {
 	// Units conversion
 	const double MeV = 1.602176634e-6; //convert MeV to CGS (erg)
-	const double cm = 10e13; //convert fm to cm 
+	const double cm = 1.e13; //convert cm to fm 
 
  	
 	// Electron mass

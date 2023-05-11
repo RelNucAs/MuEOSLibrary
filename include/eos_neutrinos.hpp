@@ -4,7 +4,7 @@
 /* NEUTRINO EOS AT EQUILIBRIUM WITH RADIATION (neutrinos degeneracy parameter is equal to minus anti-neutrinos degeneracy parameter) */
 
 #include "constants.hpp"
-#include "tools/fermi_integrals.hpp"
+#include "fermi_integrals.hpp"
 #include "eos_neutrinos.hpp"
 
 using namespace constants;

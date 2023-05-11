@@ -1,5 +1,5 @@
-#ifndef EOS_BARYONS_H
-#define EOS_BARYONS_H
+#ifndef EOS_BARYONS_OLD_H
+#define EOS_BARYONS_OLD_H
 
 //! \file eos_baryons.hpp
 //  \brief Defines EOSTable, which stores information from a tabulated

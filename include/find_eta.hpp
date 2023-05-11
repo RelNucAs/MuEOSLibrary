@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 #include "parameters.hpp"
 #include "constants.hpp"
 
@@ -64,7 +66,7 @@ double rtsafe(const double nLep, const double T, const double guess) {
                 x2 = mu_tab_lim.eta_max;
         }
 
-        double xh, xl;
+	double xh, xl;
         double fl=n_net_f(x1, T, mLep)-nLep;
         double fh=n_net_f(x2, T, mLep)-nLep;
 

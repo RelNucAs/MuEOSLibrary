@@ -36,7 +36,7 @@ std::array<double,9> eos_ferm_onthefly(const double eta, const double T, const i
 	eos_array[IL_P] = K3[id_L]*mL[id_L]*pow(theta,2.5)*(2.*f32+theta*f52); //MeV/fm^3
 
 //.......Pressure of anti-leptons
-	eos_array[IA_P] = K3[id_L]*mL[id_L]*pow(theta,2.5)*(2.*a_f32+theta*a_f52); //MeV/cm^3
+	eos_array[IA_P] = K3[id_L]*mL[id_L]*pow(theta,2.5)*(2.*a_f32+theta*a_f52); //MeV/fm^3
 
 //.......Internal energy density of leptons
 	eos_array[IL_E] = K[id_L]*mL[id_L]*pow(theta,1.5)*(f12+2.*theta*f32+theta*theta*f52); //MeV/fm^3

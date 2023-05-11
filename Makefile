@@ -31,6 +31,7 @@ TESTS_SRC := $(wildcard $(TESTS_DIR)*.cpp)
 TESTS_OBJ := $(patsubst $(TESTS_DIR)%.cpp, $(COMPILE_DIR)%.o, $(TESTS_SRC))
 
 all: test_performance
+	ar rcs $(COMPILE_DIR)libout.a $(OBJECTS)
 
 run: test_performance test_eos
 	$(COMPILE_DIR)test_eos_performance; $(COMPILE_DIR)test_eos
@@ -39,7 +40,7 @@ test_performance: $(OBJECTS) $(COMPILE_DIR)test_eos_performance.o
 	$(CXX) $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) $(OBJECTS) $(COMPILE_DIR)test_eos_performance.o -o $(COMPILE_DIR)test_eos_performance $(H5_LIB) $(H5_FLAGS)
 
 test_eos: $(OBJECTS) $(COMPILE_DIR)test_eos.o
-	$(CXX) $(RFLAGS) $(INCLUDE) $(OBJECTS) $(COMPILE_DIR)test_eos.o -o $(COMPILE_DIR)test_eos
+	$(CXX) $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) $(OBJECTS) $(COMPILE_DIR)test_eos.o -o $(COMPILE_DIR)test_eos $(H5_LIB) $(H5_FLAGS)
 
 test_assembled: $(OBJECTS) $(COMPILE_DIR)test_eos_assembled.o
 	$(CXX) $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) $(OBJECTS) $(COMPILE_DIR)test_eos_assembled.o -o $(COMPILE_DIR)test_eos_assembled $(H5_LIB) $(H5_FLAGS)
@@ -57,11 +58,13 @@ eta_table: $(OBJECTS) $(TABLES_DIR)compile/generate_eta_table.o
 	$(CXX) $(RFLAGS) $(INCLUDE) $(OBJECTS) $(TABLES_DIR)compile/generate_eta_table.o -o $(TABLES_DIR)compile/generate_eta_table
 
 complete_table: $(OBJECTS) $(TABLES_DIR)compile/generate_complete_table.o
-	$(CXX) $(RFLAGS) $(INCLUDE) $(OBJECTS) $(TABLES_DIR)compile/generate_complete_table.o -o $(TABLES_DIR)compile/generate_complete_table
+	$(CXX) $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) $(OBJECTS) $(TABLES_DIR)compile/generate_complete_table.o -o $(TABLES_DIR)compile/generate_complete_table $(H5_LIB) $(H5_FLAGS)
 
 lep_table: $(OBJECTS) $(TABLES_DIR)compile/generate_lep_table.o
 	$(CXX) $(RFLAGS) $(INCLUDE) $(OBJECTS) $(TABLES_DIR)compile/generate_lep_table.o -o $(TABLES_DIR)compile/generate_lep_table
 
+global_table: $(OBJECTS) $(TABLES_DIR)compile/generate_global_table.o
+	$(CXX) $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) $(OBJECTS) $(TABLES_DIR)compile/generate_global_table.o -o $(TABLES_DIR)compile/generate_global_table $(H5_LIB) $(H5_FLAGS)
 
 $(COMPILE_DIR)%.o: $(TESTS_DIR)%.cpp
 	$(CXX) $(RFLAGS) $(INCLUDE) -c -o $@ $<

@@ -10,9 +10,10 @@
 #include <stdexcept>
 #include <iostream>
 #include <fstream>
+#include <iomanip>
 
 #include <eos_assembled.hpp>
-#include <eos_baryons.hpp>
+//#include <eos_baryons.hpp>
 #include <eos_leptons.hpp>
 #include <eos_photons.hpp>
 
@@ -67,6 +68,7 @@ double EOS_assembled::Energy(double n, double T, double *Y) {
 }
 
 double EOS_assembled::Pressure(double n, double T, double *Y) {
+  //cout << "Rad: " << RadPressure(T) << endl;
   return BarPressure(n, T, Y) + LepPressure(n, T, Y) + RadPressure(T);
 }
 
@@ -81,12 +83,16 @@ double EOS_assembled::Enthalpy(double n, double T, double *Y) {
 }
 
 double EOS_assembled::SoundSpeed(double n, double T, double *Y) {
-  double const dPdn = BardPdn(n, T, Y) + EdPdn(n, T, Y) + MdPdn(n, T, Y);
-  double const dsdn = Bardsdn(n, T, Y) + Edsdn(n, T, Y) + Mdsdn(n, T, Y);
-  double const dPdt = BardPdT(n, T, Y) + EdPdt(n, T, Y) + MdPdt(n, T, Y);
-  double const dsdt = BardsdT(n, T, Y) + Edsdt(n, T, Y) + Mdsdt(n, T, Y);
 
-  return (dPdn - dsdn/dsdt*dPdt) / Enthalpy(n, T, Y);
+  double const dPdn = BardPdn(n, T, Y) + EdPdn(n, T, Y) + MdPdn(n, T, Y);
+  double const dsdn = Bardsdn(n, T, Y) + Edsdn(n, T, Y) + Mdsdn(n, T, Y) - (RadEntropy(T) / (n*n));
+  double const dPdt = BardPdT(n, T, Y) + EdPdt(n, T, Y) + MdPdt(n, T, Y) + RaddPdT(T);
+  double const dsdt = BardsdT(n, T, Y) + Edsdt(n, T, Y) + Mdsdt(n, T, Y) + (RaddsdT(T)/n);
+  //double const cs2 = sqrt(std::max(1.e-6,(dPdn - dsdn/dsdt*dPdt) / ((BarPressure(n, T, Y) + BarEnergy(n, T, Y)) / n)));
+  double const cs2 = sqrt(std::max(1.e-6,(dPdn - dsdn/dsdt*dPdt) / Enthalpy(n, T, Y)));
+  if (cs2 >= 1.) cout << "cs2 > 1!" << endl;
+  //cout << "dPdn = " << dPdn << "\t" << "dsdn = " << dsdn << "\t" << "dPdt = " << dPdt << "\t" << "dsdt = " << dsdt << endl << endl; 
+  return cs2;
 }
 
 
@@ -96,14 +102,14 @@ double EOS_assembled::temperature_from_e(double var, double n, double *Y) { //co
   double wn0, wn1, wy0, wy1;
 
   EOS_baryons::weight_idx_ln(&wn0, &wn1, &in, log(n));
-  EOS_baryons::weight_idx_yq(&wy0, &wy1, &iy, Y[0]);
+  EOS_baryons::weight_idx_yq(&wy0, &wy1, &iy, Y[0]+Y[1]);
 
   auto f = [=](int it){
     double var_pt =
-      log(exp(wn0 * (wy0 * EOS_baryons::m_table[EOS_baryons::index(iv, in+0, iy+0, it)]  +
-                     wy1 * EOS_baryons::m_table[EOS_baryons::index(iv, in+0, iy+1, it)]) +
-              wn1 * (wy0 * EOS_baryons::m_table[EOS_baryons::index(iv, in+1, iy+0, it)]  +
-                     wy1 * EOS_baryons::m_table[EOS_baryons::index(iv, in+1, iy+1, it)])) +
+      log(exp(wn0 * (wy0 * m_table[EOS_baryons::index(iv, in+0, iy+0, it)]  +
+                     wy1 * m_table[EOS_baryons::index(iv, in+0, iy+1, it)]) +
+              wn1 * (wy0 * m_table[EOS_baryons::index(iv, in+1, iy+0, it)]  +
+                     wy1 * m_table[EOS_baryons::index(iv, in+1, iy+1, it)])) +
           EOS_leptons::LepEnergy(n, exp(EOS_baryons::m_log_t[it]), Y) + RadEnergy(exp(EOS_baryons::m_log_t[it])));
 
     return var - var_pt;
@@ -148,22 +154,33 @@ double EOS_assembled::temperature_from_p(double var, double n, double *Y) { //co
   double wn0, wn1, wy0, wy1;
 
   EOS_baryons::weight_idx_ln(&wn0, &wn1, &in, log(n));
-  EOS_baryons::weight_idx_yq(&wy0, &wy1, &iy, Y[0]);
+  EOS_baryons::weight_idx_yq(&wy0, &wy1, &iy, Y[0]+Y[1]);
 
   auto f = [=](int it){
-    double var_pt =
-      log(exp(wn0 * (wy0 * EOS_baryons::m_table[EOS_baryons::index(iv, in+0, iy+0, it)]  +
-                     wy1 * EOS_baryons::m_table[EOS_baryons::index(iv, in+0, iy+1, it)]) +
-              wn1 * (wy0 * EOS_baryons::m_table[EOS_baryons::index(iv, in+1, iy+0, it)]  +
-                     wy1 * EOS_baryons::m_table[EOS_baryons::index(iv, in+1, iy+1, it)])) +
-         EOS_leptons::LepPressure(n, exp(EOS_baryons::m_log_t[it]), Y) + RadPressure(exp(EOS_baryons::m_log_t[it])));
-    return var - var_pt;
+    double temp = exp(EOS_baryons::m_log_t[it]);
+    double var_pt = exp(wn0 * (wy0 * EOS_baryons::m_table[EOS_baryons::index(iv, in+0, iy+0, it)]   +
+                               wy1 * EOS_baryons::m_table[EOS_baryons::index(iv, in+0, iy+1, it)])  +
+                        wn1 * (wy0 * EOS_baryons::m_table[EOS_baryons::index(iv, in+1, iy+0, it)]   +
+                               wy1 * EOS_baryons::m_table[EOS_baryons::index(iv, in+1, iy+1, it)])) -
+	            Pmin + EOS_leptons::LepPressure(n, temp, Y) + RadPressure(temp);
+    assert(var_pt > 0.);  
+    return var - log(var_pt);
   };
 
   int ilo = 0;
   int ihi = m_nt-1;
   double flo = f(ilo);
   double fhi = f(ihi);
+  //if (!(flo*fhi <= 0)) {
+	//cout << iv << "\t" << ilo << "\t" << ihi << endl;
+  	//cout << in << "\t" << iy << endl;
+  	//cout << wn0 << "\t" << wn1 << "\t" << wy0 << "\t" << wy1 << endl;
+  	//cout << "Number density = " << n << ", Electron fraction = " << Y[0] << ": flo = " << var-flo << ", fhi = " << var-fhi << endl;
+  	//cout << var << endl;
+	//cout << "Baryon flo = " << f1 << endl;;
+  	//assert(flo*fhi <= 0);
+	//return 0;
+  //}
   assert(flo*fhi <= 0);
   while (ihi - ilo > 1) {
     int ip = ilo + (ihi - ilo)/2;

@@ -185,6 +185,8 @@ class EOS_leptons {
 
     bool m_el_initialized;
     bool m_mu_initialized;
+
+    bool m_mu_active;
   public:
     // Table size
     int m_ne, m_nte;

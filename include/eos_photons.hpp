@@ -34,5 +34,15 @@ double RadEntropy(double T){ //T in MeV
 	return (32.*pow(pi,5.)/45.) * pow(T/(h*c),3.); //fm^-3
 }
 
+//pressure derivative wrt temperature
+double RaddPdT(double T){ //T in MeV
+	return 4. * RadPressure(T) / T;
+}
+
+//entropy derivative wrt temperature
+double RaddsdT(double T){ //T in MeV
+	return 3. * RadEntropy(T) / T;
+}
+
 }
 #endif

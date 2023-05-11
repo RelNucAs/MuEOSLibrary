@@ -1,5 +1,5 @@
-#ifndef EOS_COMPOSE_H
-#define EOS_COMPOSE_H
+#ifndef EOS_BARYONS_H
+#define EOS_BARYONS_H
 
 //! \file eos_compose.hpp
 //  \brief Defines EOSTable, which stores information from a tabulated
@@ -30,7 +30,7 @@ class EOS_baryons {
       BNVARS = 9
     };
 
-  protected:
+  public:
     /// Constructor
     EOS_baryons();
 
@@ -92,6 +92,8 @@ class EOS_baryons {
     double eval_at_nty(int vi, double n, double T, double Yq) const;
     /// Low level evaluation function, not intended for outside use
     double eval_at_lnty(int vi, double ln, double lT, double Yq) const;
+    /// Low level evaluation function, not intended for outside use
+    double eval_at_nty_new(int vi, double n, double T, double Yq) const;
 
   public:
     /// Evaluate interpolation weight for density
@@ -106,6 +108,9 @@ class EOS_baryons {
     double m_id_log_nb, m_id_log_t, m_id_yq;
     // Table size
     int m_nn, m_nt, m_ny;
+
+    // Minimum Pressure
+    double Pmin;
 
     // Table storage, care should be made to store these data on the GPU later
     double * m_log_nb;

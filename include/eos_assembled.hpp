@@ -39,7 +39,7 @@ class EOS_assembled : public EOS_baryons, public EOS_leptons {
     /// Calculate the sound speed.
     double SoundSpeed(double n, double T, double *Y);
 
-    protected:
+    public:
     /// Low level function, not intended for outside use
     double temperature_from_e(double var, double n, double *Y); //const;
     double temperature_from_p(double var, double n, double *Y); //const;
