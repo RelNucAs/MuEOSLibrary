@@ -53,85 +53,6 @@ double EOS_leptons::mu_check(const bool check, const double value) {
 	}
 }
 
-double EOS_leptons::ElectronNumberDensity(double n, double T, double *Y) {
-  assert(m_el_initialized);
-  return exp(eval_el_at_nty(IL_N, n, T, Y[id_e]));
-}
-
-double EOS_leptons::PositronNumberDensity(double n, double T, double *Y) {
-  assert(m_el_initialized);
-  //return exp(eval_el_at_nty(IA_N, n, T, Y));
-  return ElectronNumberDensity(n, T, Y) - n*Y[id_e];
-}
-
-double EOS_leptons::MuonNumberDensity(double n, double T, double *Y) {
-  return mu_check(m_mu_initialized, exp(eval_mu_at_nty(IL_N, n, T, Y[id_mu])));
-  //assert(m_mu_initialized);
-  //return exp(eval_mu_at_nty(IL_N, n, T, Y[id_mu]));
-}
-
-double EOS_leptons::AntiMuonNumberDensity(double n, double T, double *Y) {
-  return mu_check(m_mu_initialized, MuonNumberDensity(n, T, Y) - n*Y[id_mu]);
-  //assert(m_mu_initialized);
-  //return MuonNumberDensity(n, T, Y) - n*Y[id_mu];
-}
-
-double EOS_leptons::ElectronEnergy(double n, double T, double Y) {
-  assert(m_el_initialized);
-  return exp(eval_el_at_nty(IL_E, n, T, Y)) + exp(eval_el_at_nty(IA_E, n, T, Y));
-}
-
-double EOS_leptons::MuonEnergy(double n, double T, double Y) {
-  //muon_check(m_mu_initialized,exp(eval_mu_at_nty(IL_E, n, T, Y)) + exp(eval_mu_at_nty(IA_E, n, T, Y)));
-  //assert(m_mu_initialized);
-  return mu_check(m_mu_initialized,exp(eval_mu_at_nty(IL_E, n, T, Y)) + exp(eval_mu_at_nty(IA_E, n, T, Y)));
-}
-
-double EOS_leptons::LepEnergy(double n, double T, double *Y) {
-  return ElectronEnergy(n, T, Y[id_e]) + MuonEnergy(n, T, Y[id_mu]);
-}
-
-double EOS_leptons::ElectronPressure(double n, double T, double *Y) {
-  assert(m_el_initialized);
-  return exp(eval_el_at_nty(IL_P, n, T, Y[id_e])) + exp(eval_el_at_nty(IA_P, n, T, Y[id_e]));
-}
-
-double EOS_leptons::MuonPressure(double n, double T, double *Y) {
-  return mu_check(m_mu_initialized,exp(eval_mu_at_nty(IL_P, n, T, Y[id_mu])) + exp(eval_mu_at_nty(IA_P, n, T, Y[id_mu])));
-  //assert(m_mu_initialized);
-  //return exp(eval_mu_at_nty(IL_P, n, T, Y[id_mu])) + exp(eval_mu_at_nty(IA_P, n, T, Y[id_mu]));
-}
-
-double EOS_leptons::LepPressure(double n, double T, double *Y) {
-  return ElectronPressure(n, T, Y) + MuonPressure(n, T, Y);
-}
-
-double EOS_leptons::ElectronEntropy(double n, double T, double *Y) {
-  assert(m_el_initialized);
-  return exp(eval_el_at_nty(IL_S, n, T, Y[id_e])) + exp(eval_el_at_nty(IA_S, n, T, Y[id_e]));
-}
-
-double EOS_leptons::MuonEntropy(double n, double T, double *Y) {
-  return mu_check(m_mu_initialized,exp(eval_mu_at_nty(IL_S, n, T, Y[id_mu])) + exp(eval_mu_at_nty(IA_S, n, T, Y[id_mu])));
-  //assert(m_mu_initialized);
-  //return exp(eval_mu_at_nty(IL_S, n, T, Y[id_mu])) + exp(eval_mu_at_nty(IA_S, n, T, Y[id_mu]));
-}
-
-double EOS_leptons::LepEntropy(double n, double T, double *Y) {
-  return ElectronEntropy(n, T, Y) + MuonEntropy(n, T, Y);
-}
-
-double EOS_leptons::ElectronChemicalPotential(double n, double T, double *Y) {
-  assert(m_el_initialized);
-  return eval_el_at_nty(IL_MU, n, T, Y[id_e]);
-}
-
-double EOS_leptons::MuonChemicalPotential(double n, double T, double *Y) {
-  return mu_check(m_mu_initialized,eval_mu_at_nty(IL_MU, n, T, Y[id_mu]));
-  //assert(m_mu_initialized);
-  //return eval_mu_at_nty(IL_MU, n, T, Y[id_mu]);
-}
-
 double EOS_leptons::EdPdn(double n, double T, double *Y) {
   assert(m_el_initialized);
   return eval_el_at_nty(ID_DPDN, n, T, Y[id_e])*Y[id_e];
@@ -139,7 +60,7 @@ double EOS_leptons::EdPdn(double n, double T, double *Y) {
 
 double EOS_leptons::Edsdn(double n, double T, double *Y) {
   assert(m_el_initialized);
-  return eval_el_at_nty(ID_DSDN, n, T, Y[id_e]) * Y[id_e] / n - ElectronEntropy(n, T, Y) / (n*n);
+  return eval_el_at_nty(ID_DSDN, n, T, Y[id_e]) * Y[id_e] / n - ElectronEntropy<1>(n, T, Y) / (n*n);
 }
 
 double EOS_leptons::EdPdt(double n, double T, double *Y) {
@@ -153,27 +74,35 @@ double EOS_leptons::Edsdt(double n, double T, double *Y) {
 }
 
 double EOS_leptons::MdPdn(double n, double T, double *Y) {
-  return mu_check(m_mu_initialized,eval_mu_at_nty(ID_DPDN, n, T, Y[id_mu])*Y[id_mu]);
-  //assert(m_mu_initialized);
-  //return eval_mu_at_nty(ID_DPDN, n, T, Y[id_mu]);
+  if (m_mu_initialized) {
+    return eval_mu_at_nty(ID_DPDN, n, T, Y[id_mu]) * Y[id_mu];
+  } else {
+    return 0.;
+  }
 }
 
 double EOS_leptons::Mdsdn(double n, double T, double *Y) {
-  return mu_check(m_mu_initialized,eval_mu_at_nty(ID_DSDN, n, T, Y[id_mu]) * Y[id_mu] / n - MuonEntropy(n, T, Y) / (n*n));
-  //assert(m_mu_initialized);
-  //return eval_mu_at_nty(ID_DSDN, n, T, Y[id_mu]);
+  if (m_mu_initialized) {
+    return eval_mu_at_nty(ID_DSDN, n, T, Y[id_mu]) * Y[id_mu] / n - LepEntropy<1>(n, T, Y) / (n*n);
+  } else {
+    return 0.;
+  }
 }
 
 double EOS_leptons::MdPdt(double n, double T, double *Y) {
-  return mu_check(m_mu_initialized,eval_mu_at_nty(ID_DPDT, n, T, Y[id_mu]));
-  //assert(m_mu_initialized);
-  //return eval_mu_at_nty(ID_DPDT, n, T, Y[id_mu]);
+  if (m_mu_initialized) {
+    return eval_mu_at_nty(ID_DPDT, n, T, Y[id_mu]);
+  } else {
+    return 0.;
+  }
 }
 
 double EOS_leptons::Mdsdt(double n, double T, double *Y) {
-  return mu_check(m_mu_initialized, eval_mu_at_nty(ID_DSDT, n, T, Y[id_mu]));
-  //assert(m_mu_initialized);
-  //return eval_mu_at_nty(ID_DSDT, n, T, Y[id_mu]);
+  if (m_mu_initialized) {
+    return eval_mu_at_nty(ID_DSDT, n, T, Y[id_mu]) / n;
+  } else {
+    return 0.;
+  }
 }
 
 std::array<double,EOS_leptons::NVARS> EOS_leptons::ComputeFullElectronEOS(double n, double T, double *Y) {
@@ -240,14 +169,6 @@ void EOS_leptons::ReadETableFromFile(std::string fname) {
     stringstream s5(EOSline);
       for (int it = 0; it < m_nte; ++it) {
         s5 >> number;
-        m_el_table[el_index(IL_MU, in, it)] = log(number);
-  }}
-
-  for (int in = 0; in < m_ne; ++in) {
-    getline(EOSinput, EOSline);
-    stringstream s5(EOSline);
-      for (int it = 0; it < m_nte; ++it) {
-        s5 >> number;
         m_el_table[el_index(IL_N, in, it)] = log(number);
   }}
 
@@ -298,13 +219,21 @@ void EOS_leptons::ReadETableFromFile(std::string fname) {
         s5 >> number;
         m_el_table[el_index(IL_S, in, it)] = log(number);
   }}
+
+  for (int in = 0; in < m_ne; ++in) {
+    getline(EOSinput, EOSline);
+    stringstream s5(EOSline);
+      for (int it = 0; it < m_nte; ++it) {
+        s5 >> number;
+        m_el_table[el_index(IA_S, in, it)] = log(number);
+  }}
   
   for (int in = 0; in < m_ne; ++in) {
     getline(EOSinput, EOSline);
     stringstream s5(EOSline);
       for (int it = 0; it < m_nte; ++it) {
         s5 >> number;
-        m_el_table[el_index(IA_S, in, it)] = number;
+        m_el_table[el_index(IL_MU, in, it)] = number;
   }}
 
   for (int in = 0; in < m_ne; ++in) {

@@ -38,6 +38,8 @@ namespace parameters
 					   //n_min, n_max, y_min,   y_max,  t_min,    t_max,  eta_min,  eta_max
 
 
+	constexpr int id_test = 1;
+
 	const bool HR = false;
 
 	const struct eos_table_dim SR_tab = {700 ,  750, 150};

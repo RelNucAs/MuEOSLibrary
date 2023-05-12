@@ -60,6 +60,16 @@ double EOS_baryons::BarEntropy(double n, double T, double *Y) {
   return eval_at_nty(BENT, n, T, Y[0]+Y[1]);
 }
 
+double EOS_baryons::ProtonChemicalPotential(double n, double T, double *Y) {
+  assert (m_initialized);
+  return eval_at_nty(BMUB, n, T, Y[0]+Y[1]) + eval_at_nty(BMUQ, n, T, Y[0]+Y[1]);
+}
+
+double EOS_baryons::NeutronChemicalPotential(double n, double T, double *Y) {
+  assert (m_initialized);
+  return eval_at_nty(BMUB, n, T, Y[0]+Y[1]);
+}
+
 double EOS_baryons::BardPdn(double n, double T, double *Y) {
   assert (m_initialized);
   return eval_at_nty(BDPDN, n, T, Y[0]+Y[1]);
@@ -155,7 +165,7 @@ void EOS_baryons::ReadBarTableFromFile(std::string fname) {
   }}}
   Pmin = fabs(Pmin) + 1.e-10;
 
-  cout << "Minimum Pressure = " << Pmin << endl;
+  //cout << "Minimum Pressure = " << Pmin << endl;
 
   for (int inb = 0; inb < m_nn; ++inb) {
   for (int iyq = 0; iyq < m_ny; ++iyq) {

@@ -6,8 +6,8 @@
 #include <cstddef>
 #include <string>
 
-#include "eos_baryons.hpp"
-#include "eos_leptons.hpp"
+#include <eos_leptons.hpp>
+#include <eos_baryons.hpp>
 
 class EOS_assembled : public EOS_baryons, public EOS_leptons {
     

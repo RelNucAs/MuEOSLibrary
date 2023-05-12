@@ -6,6 +6,8 @@
 //         equation of state
 
 #include <array>
+#include <cassert>
+#include "eos_fermions.hpp"
 
 class EOS_leptons {
   public:
@@ -37,50 +39,172 @@ class EOS_leptons {
     ~EOS_leptons();
 
     /// Calculate the number density of electrons using.
-    double ElectronNumberDensity(double n, double T, double *Y);
+    template <int id_EOS>
+    double ElectronNumberDensity(double n, double T, double *Y) {
+        if constexpr(id_EOS == 1) {
+            assert(m_el_initialized);
+            return exp(eval_el_at_nty(IL_N, n, T, Y[id_e]));
+        } else if constexpr(id_EOS == 2) {
+            return eos_ferm_single<id_EOS,0>(n*Y[id_e], T)[IL_N];
+        }
+    }
 
     /// Calculate the number density of positrons using.
-    double PositronNumberDensity(double n, double T, double *Y);
+    template <int id_EOS>
+    double PositronNumberDensity(double n, double T, double *Y) {
+      //assert(m_el_initialized);
+      //return exp(eval_el_at_nty(IA_N, n, T, Y[id_e]));
+      return ElectronNumberDensity<id_EOS>(n, T, Y) - n*Y[id_e];
+    }
 
     /// Calculate the number density of muons using.
-    double MuonNumberDensity(double n, double T, double *Y);
+    template <int id_EOS>
+    double MuonNumberDensity(double n, double T, double *Y) {
+      if (m_mu_initialized) {
+        if constexpr(id_EOS == 1) {
+            assert(m_mu_initialized);
+            return exp(eval_mu_at_nty(IL_N, n, T, Y[id_mu]));
+        } else if constexpr(id_EOS == 2) {
+	    return eos_ferm_single<id_EOS,1>(n*Y[id_mu], T)[IL_N];
+        }
+      } else {
+        return 0.;
+      }
+    }
 
     /// Calculate the number density of anti-muons using.
-    double AntiMuonNumberDensity(double n, double T, double *Y);
+    template <int id_EOS>
+    double AntiMuonNumberDensity(double n, double T, double *Y) {
+      //assert(m_mu_initialized);
+      //return exp(eval_mu_at_nty(IA_N, n, T, Y[id_mu]));
+      if (m_mu_initialized) {
+      return MuonNumberDensity<id_EOS>(n, T, Y) - n*Y[id_mu];
+      } else {
+        return 0.;
+      }
+    }
     
     /// Calculate the internal energy density of electrons + positrons using.
-    double ElectronEnergy(double n, double T, double Y);
+    template <int id_EOS>
+    double ElectronEnergy(double n, double T, double *Y) {
+        if constexpr(id_EOS == 1) {
+            assert(m_el_initialized);
+            return exp(eval_el_at_nty(IL_E, n, T, Y[id_e])) + exp(eval_el_at_nty(IA_E, n, T, Y[id_e]));
+        } else if constexpr(id_EOS == 2) {
+	    return eos_ferm_single<id_EOS,0>(n*Y[id_e], T)[IL_E] + eos_ferm_single<id_EOS,0>(n*Y[id_e], T)[IA_E]; 
+        }
+    }
 
     /// Calculate the internal energy density of muons + anti-muons using.
-    double MuonEnergy(double n, double T, double Y);
+    template <int id_EOS>
+    double MuonEnergy(double n, double T, double *Y) {
+      if (m_mu_initialized) {
+        if constexpr(id_EOS == 1) {
+            assert(m_mu_initialized);
+            return exp(eval_mu_at_nty(IL_E, n, T, Y[id_mu])) + exp(eval_mu_at_nty(IA_E, n, T, Y[id_mu]));
+        } else if constexpr(id_EOS == 2) {
+            return eos_ferm_single<id_EOS,1>(n*Y[id_mu], T)[IL_E] + eos_ferm_single<id_EOS,1>(n*Y[id_mu], T)[IA_E];
+        }
+      } else {
+        return 0.;
+      }
+    }
     
     /// Calculate the internal energy density of leptons using.
-    double LepEnergy(double n, double T, double *Y);
-    
+    template <int id_EOS>
+    double LepEnergy(double n, double T, double *Y) {
+        return ElectronEnergy<id_EOS>(n, T, Y) + MuonEnergy<id_EOS>(n, T, Y);	    
+    }
+
     /// Calculate the pressure of electrons + positrons using.
-    double ElectronPressure(double n, double T, double *Y);
+    template <int id_EOS>
+    double ElectronPressure(double n, double T, double *Y) {
+        if constexpr(id_EOS == 1) {
+            assert(m_el_initialized);
+            return exp(eval_el_at_nty(IL_P, n, T, Y[id_e])) + exp(eval_el_at_nty(IA_P, n, T, Y[id_e]));
+        } else if constexpr(id_EOS == 2) {
+            return eos_ferm_single<id_EOS,0>(n*Y[id_e], T)[IL_P] + eos_ferm_single<id_EOS,0>(n*Y[id_e], T)[IA_P];
+        }
+    }
 
     /// Calculate the pressure of muons + anti-muons using.
-    double MuonPressure(double n, double T, double *Y);
+    template <int id_EOS>
+    double MuonPressure(double n, double T, double *Y) {
+      if (m_mu_initialized) {
+        if constexpr(id_EOS == 1) {
+            assert(m_mu_initialized);
+            return exp(eval_mu_at_nty(IL_P, n, T, Y[id_mu])) + exp(eval_mu_at_nty(IA_P, n, T, Y[id_mu]));
+        } else if constexpr(id_EOS == 2) {
+            return eos_ferm_single<id_EOS,1>(n*Y[id_mu], T)[IL_P] + eos_ferm_single<id_EOS,1>(n*Y[id_mu], T)[IA_P];
+        }
+      } else {
+        return 0.;
+      }
+    }
     
     /// Calculate the pressure of leptons using.
-    double LepPressure(double n, double T, double *Y);
+    template <int id_EOS>
+    double LepPressure(double n, double T, double *Y) {
+        return ElectronPressure<id_EOS>(n, T, Y) + MuonPressure<id_EOS>(n, T, Y);
+    }
 
     /// Calculate the entropy density of electrons + positrons using.
-    double ElectronEntropy(double n, double T, double *Y);
+    template <int id_EOS>
+    double ElectronEntropy(double n, double T, double *Y) {
+        if constexpr(id_EOS == 1) {
+            assert(m_el_initialized);
+            return exp(eval_el_at_nty(IL_S, n, T, Y[id_e])) + exp(eval_el_at_nty(IA_S, n, T, Y[id_e]));
+        } else if constexpr(id_EOS == 2) {
+            return eos_ferm_single<id_EOS,0>(n*Y[id_e], T)[IL_S] + eos_ferm_single<id_EOS,0>(n*Y[id_e], T)[IA_S];
+        }
+    }
 
     /// Calculate the entropy density of muons + anti-muons using.
-    double MuonEntropy(double n, double T, double *Y);
+    template <int id_EOS>
+    double MuonEntropy(double n, double T, double *Y) {
+      if (m_mu_initialized) {
+        if constexpr(id_EOS == 1) {
+            assert(m_mu_initialized);
+            return exp(eval_mu_at_nty(IL_S, n, T, Y[id_mu])) + exp(eval_mu_at_nty(IA_S, n, T, Y[id_mu]));
+        } else if constexpr(id_EOS == 2) {
+            return eos_ferm_single<id_EOS,1>(n*Y[id_mu], T)[IL_S] + eos_ferm_single<id_EOS,1>(n*Y[id_mu], T)[IA_S];
+        }
+      } else {
+        return 0.;
+      }
+    }
 
     /// Calculate the entropy density of leptons using.
-    double LepEntropy(double n, double T, double *Y);
+    template <int id_EOS>
+    double LepEntropy(double n, double T, double *Y) {
+        return ElectronEntropy<id_EOS>(n, T, Y) + MuonEntropy<id_EOS>(n, T, Y);
+    }
 
     /// Calculate the chemical potential of electrons using.
-    double ElectronChemicalPotential(double n, double T, double *Y);
-    
+    template <int id_EOS>
+    double ElectronChemicalPotential(double n, double T, double *Y) {
+        if constexpr(id_EOS == 1) {
+            assert(m_el_initialized);
+            return eval_el_at_nty(IL_MU, n, T, Y[id_e]);
+        } else if constexpr(id_EOS == 2) {
+            return eos_ferm_single<id_EOS,0>(n*Y[id_e], T)[IL_MU];
+        }
+    }
+
     /// Calculate the chemical potential of muons using.
-    double MuonChemicalPotential(double n, double T, double *Y);
-   
+    template <int id_EOS>
+    double MuonChemicalPotential(double n, double T, double *Y) {
+      if (m_mu_initialized) {
+        if constexpr(id_EOS == 1) {
+            assert(m_mu_initialized);
+            return eval_mu_at_nty(IL_MU, n, T, Y[id_mu]);
+        } else if constexpr(id_EOS == 2) {
+            return eos_ferm_single<id_EOS,1>(n*Y[id_mu], T)[IL_MU];
+        }
+      } else {
+        return 0.;
+      }
+    }
     /// Calculate the sound speed derivatives using.
     double EdPdn(double n, double T, double *Y);
     double Edsdn(double n, double T, double *Y);

@@ -1,4 +1,7 @@
-#pragma once
+#ifndef INTERP_H
+#define INTERP_H
+
+#include <vector>
 
 struct EOSeta {
         //double d[nne]; //density
@@ -61,4 +64,4 @@ double eos_tintep(double d, double t, std::vector<double> &d_arr, std::vector<do
 
 std::array<double,13> eos_interp(const double d, const double t, const struct EOScomplete &EOSin);
 
-
+#endif

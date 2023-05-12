@@ -46,6 +46,12 @@ class EOS_baryons {
     /// Calculate the entropy per baryon using.
     double BarEntropy(double n, double T, double *Y);
 
+    /// Calculate the relativsitc proton chemical potential using.
+    double ProtonChemicalPotential(double n, double T, double *Y);
+
+    /// Calculate the relativsitc neutron chemical potential using.
+    double NeutronChemicalPotential(double n, double T, double *Y);
+
     /// Calculate the sound speed derivatives using.
     double BardPdn(double n, double T, double *Y);
     double Bardsdn(double n, double T, double *Y);

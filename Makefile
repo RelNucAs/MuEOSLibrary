@@ -27,11 +27,15 @@ OBJECTS := $(patsubst $(SRC_DIR)%.cpp, $(COMPILE_DIR)src/%.o, $(SOURCES))
 TABLES_SRC := $(wildcard $(TABLES_DIR)*.cpp) 
 TABLES_OBJ := $(patsubst $(TABLES_DIR)%.cpp, $(TABLES_DIR)compile/%.o, $(TABLES_SRC))
 
+
 TESTS_SRC := $(wildcard $(TESTS_DIR)*.cpp)
 TESTS_OBJ := $(patsubst $(TESTS_DIR)%.cpp, $(COMPILE_DIR)%.o, $(TESTS_SRC))
 
-all: test_performance
+all: $(OBJECTS) main
 	ar rcs $(COMPILE_DIR)libout.a $(OBJECTS)
+
+main: main.o $(OBJECTS)
+	$(CXX) $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) $(OBJECTS) main.o -o main $(H5_LIB) $(H5_FLAGS)
 
 run: test_performance test_eos
 	$(COMPILE_DIR)test_eos_performance; $(COMPILE_DIR)test_eos
@@ -72,6 +76,9 @@ $(COMPILE_DIR)%.o: $(TESTS_DIR)%.cpp
 $(COMPILE_DIR)src/%.o: $(SRC_DIR)%.cpp
 	$(CXX) $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) -c -o $@ $< $(CPPFLAGS) $(H5_LIB) $(H5_FLAGS)
 
+main.o: main.cpp
+	$(CXX) $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) -c -o $@ $< $(CPPFLAGS) $(H5_LIB) $(H5_FLAGS)
+
 $(TESTS_DIR)compile/%.o: $(TESTS_DIR)%.cpp
 	$(CXX) $(RFLAGS) $(INCLUDE) -c -o $@ $<
 
@@ -81,4 +88,6 @@ clean:
 	find $(COMPILE_DIR) -type f -exec rm -f {} +
 	rm -v -f $(COMPILE_DIR)src/*
 	rm -v -f $(TABLES_DIR)compile/*
+	rm -v -f main.o
+	rm -v -f ./main
 

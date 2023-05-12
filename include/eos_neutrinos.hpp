@@ -4,8 +4,7 @@
 /* NEUTRINO EOS AT EQUILIBRIUM WITH RADIATION (neutrinos degeneracy parameter is equal to minus anti-neutrinos degeneracy parameter) */
 
 #include "constants.hpp"
-#include "fermi_integrals.hpp"
-#include "eos_neutrinos.hpp"
+#include "fermi_integrals.h"
 
 using namespace constants;
 
@@ -25,7 +24,8 @@ double nu_fraction(const double nb, const double T, const double eta) {
 
 // Number fraction of antineutrinos (yan)
 double anu_fraction(const double nb, const double T, const double eta) {
-	return nu_const * pow(T,3.) * Fermi_integral_p2(-eta) / nb;
+	return nu_fraction(nb, T, -eta);
+	//return nu_const * pow(T,3.) * Fermi_integral_p2(-eta) / nb;
 }
 
 // Energy per baryon of neutrinos (en)
@@ -35,7 +35,8 @@ double nu_energy(const double nb, const double T, const double eta) {
 
 // Energy per baryon of antineutrinos (ean)
 double anu_energy(const double nb, const double T, const double eta) {
-        return nu_const * pow(T,4.) * Fermi_integral_p3(-eta) / nb; // MeV/baryon
+        return nu_energy(nb, T, -eta); // MeV/baryon
+        //return nu_const * pow(T,4.) * Fermi_integral_p3(-eta) / nb; // MeV/baryon
 }
 
 #endif
