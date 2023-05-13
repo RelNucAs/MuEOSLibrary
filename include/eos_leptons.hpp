@@ -87,7 +87,7 @@ class EOS_leptons {
     /// Calculate the internal energy density of electrons + positrons using.
     template <int id_EOS>
     double ElectronEnergy(double n, double T, double *Y) {
-        if constexpr(id_EOS == 1) {
+	if constexpr(id_EOS == 1) {
             assert(m_el_initialized);
             return exp(eval_el_at_nty(IL_E, n, T, Y[id_e])) + exp(eval_el_at_nty(IA_E, n, T, Y[id_e]));
         } else if constexpr(id_EOS == 2) {

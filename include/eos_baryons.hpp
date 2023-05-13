@@ -23,11 +23,15 @@ class EOS_baryons {
       BMUQ   = 3,  //! charge chemical potential [MeV]
       //ECMUL   = 4,  //! lepton chemical potential [MeV]
       BLOGE  = 4,  //! log (total energy density / 1 MeV fm^-3)
-      BDPDN  = 5,  //! dP/dn [MeV]
-      BDSDN  = 6,  //! ds/dn [fm^3]
-      BDPDT  = 7,  //! dP/dT [fm^-3]
-      BDSDT  = 8,  //! ds/dT [MeV^-1]
-      BNVARS = 9
+      BYALP  = 5,  //! alpha fraction 
+      BYNUC  = 6,  //! heavy nuclei fraction 
+      BYNTR  = 7,  //! neutron fraction 
+      BYPTN  = 8,  //! proton fraction 
+      BDPDN  = 9,  //! dP/dn [MeV]
+      BDSDN  = 10, //! ds/dn [fm^3]
+      BDPDT  = 11, //! dP/dT [fm^-3]
+      BDSDT  = 12, //! ds/dT [MeV^-1]
+      BNVARS = 13
     };
 
   public:
@@ -46,11 +50,23 @@ class EOS_baryons {
     /// Calculate the entropy per baryon using.
     double BarEntropy(double n, double T, double *Y);
 
-    /// Calculate the relativsitc proton chemical potential using.
+    /// Calculate the relativistic proton chemical potential using.
     double ProtonChemicalPotential(double n, double T, double *Y);
 
-    /// Calculate the relativsitc neutron chemical potential using.
+    /// Calculate the relativistic neutron chemical potential using.
     double NeutronChemicalPotential(double n, double T, double *Y);
+
+    /// Calculate the fraction of alpha particles using.
+    double AlphaFraction(double n, double T, double *Y);
+
+    /// Calculate the fraction of heavy nuclei using.
+    double HeavyFraction(double n, double T, double *Y);
+
+    /// Calculate the fraction of free neutrons using.
+    double NeutronFraction(double n, double T, double *Y);
+
+    /// Calculate the fraction of free protons using.
+    double ProtonFraction(double n, double T, double *Y);
 
     /// Calculate the sound speed derivatives using.
     double BardPdn(double n, double T, double *Y);

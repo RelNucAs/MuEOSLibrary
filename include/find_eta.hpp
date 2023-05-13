@@ -23,7 +23,7 @@ double find_guess_eta(double nLep, double T) {
         if constexpr(species == 1) {
                 const double t = T/kB; //temp in K
                 const double nfm = nLep*1.e-39; //number density in fm^{-3}
-                const double pF = h*c*pow(3.*ne/(8.*pi),1./3.); //[MeV]
+                const double pF = h*c*pow(3.*nLep/(8.*pi),1./3.); //[MeV]
 
         //.........Find the guess
                 if ((t<=1.e10) && (nfm <= 1.e-17)) { //classical NR

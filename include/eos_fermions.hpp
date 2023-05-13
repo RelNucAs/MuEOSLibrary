@@ -280,7 +280,7 @@ std::array<double,9> eos_ferm_single(double nLep, double temp) {
 //.......Entropy density of anti-leptons
         eos_array[IA_S] = K[species]*pow(theta,1.5)*(-a_eta*a_f12+(5./3.-a_eta*theta)*a_f32+4./3.*theta*a_f52); //1/fm^3
 
-//.......Chemical potential of leptons rnal energy density of anti-leptons
+//.......Chemical potential of leptons
         eos_array[IL_MU] = mL[species] + eta*temp;
 
         return eos_array;

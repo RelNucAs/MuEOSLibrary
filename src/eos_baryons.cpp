@@ -70,6 +70,26 @@ double EOS_baryons::NeutronChemicalPotential(double n, double T, double *Y) {
   return eval_at_nty(BMUB, n, T, Y[0]+Y[1]);
 }
 
+double EOS_baryons::AlphaFraction(double n, double T, double *Y) {
+  assert (m_initialized);
+  return eval_at_nty(BYALP, n, T, Y[0]+Y[1]);
+}
+
+double EOS_baryons::HeavyFraction(double n, double T, double *Y) {
+  assert (m_initialized);
+  return eval_at_nty(BYNUC, n, T, Y[0]+Y[1]);
+}
+
+double EOS_baryons::NeutronFraction(double n, double T, double *Y) {
+  assert (m_initialized);
+  return eval_at_nty(BYNTR, n, T, Y[0]+Y[1]);
+}
+
+double EOS_baryons::ProtonFraction(double n, double T, double *Y) {
+  assert (m_initialized);
+  return eval_at_nty(BYPTN, n, T, Y[0]+Y[1]);
+}
+
 double EOS_baryons::BardPdn(double n, double T, double *Y) {
   assert (m_initialized);
   return eval_at_nty(BDPDN, n, T, Y[0]+Y[1]);
@@ -212,6 +232,38 @@ void EOS_baryons::ReadBarTableFromFile(std::string fname) {
   for (int it = 0; it < m_nt; ++it) {
     m_table[index(BLOGE, in, iy, it)] =
       log(m_bar*(scratch[index(0, in, iy, it)] + 1)) + m_log_nb[in];
+  }}}
+
+  ierr = H5LTread_dataset_double(file_id, "Y[He4]", scratch);
+    MYH5CHECK(ierr);
+  for (int in = 0; in < m_nn; ++in) {
+  for (int iy = 0; iy < m_ny; ++iy) {
+  for (int it = 0; it < m_nt; ++it) {
+    m_table[index(BYALP, in, iy, it)] = scratch[index(0, in, iy, it)];
+  }}}
+
+  ierr = H5LTread_dataset_double(file_id, "Y[N]", scratch);
+    MYH5CHECK(ierr);
+  for (int in = 0; in < m_nn; ++in) {
+  for (int iy = 0; iy < m_ny; ++iy) {
+  for (int it = 0; it < m_nt; ++it) {
+    m_table[index(BYNUC, in, iy, it)] = scratch[index(0, in, iy, it)];
+  }}}
+
+  ierr = H5LTread_dataset_double(file_id, "Y[n]", scratch);
+    MYH5CHECK(ierr);
+  for (int in = 0; in < m_nn; ++in) {
+  for (int iy = 0; iy < m_ny; ++iy) {
+  for (int it = 0; it < m_nt; ++it) {
+    m_table[index(BYNTR, in, iy, it)] = scratch[index(0, in, iy, it)];
+  }}}
+
+  ierr = H5LTread_dataset_double(file_id, "Y[p]", scratch);
+    MYH5CHECK(ierr);
+  for (int in = 0; in < m_nn; ++in) {
+  for (int iy = 0; iy < m_ny; ++iy) {
+  for (int it = 0; it < m_nt; ++it) {
+    m_table[index(BYPTN, in, iy, it)] = scratch[index(0, in, iy, it)];
   }}}
 
   ierr = H5LTread_dataset_double(file_id, "dPdn", scratch);

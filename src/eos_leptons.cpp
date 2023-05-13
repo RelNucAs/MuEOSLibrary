@@ -333,14 +333,6 @@ void EOS_leptons::ReadMTableFromFile(std::string fname) {
     stringstream s5(EOSline);
       for (int it = 0; it < m_ntm; ++it) {
         s5 >> number;
-        m_mu_table[mu_index(IL_MU, in, it)] = log(number);
-  }}
-
-  for (int in = 0; in < m_nm; ++in) {
-    getline(EOSinput, EOSline);
-    stringstream s5(EOSline);
-      for (int it = 0; it < m_ntm; ++it) {
-        s5 >> number;
         m_mu_table[mu_index(IL_N, in, it)] = log(number);
   }}
 
@@ -391,13 +383,21 @@ void EOS_leptons::ReadMTableFromFile(std::string fname) {
         s5 >> number;
         m_mu_table[mu_index(IL_S, in, it)] = log(number);
   }}
+
+  for (int in = 0; in < m_nm; ++in) {
+    getline(EOSinput, EOSline);
+    stringstream s5(EOSline);
+      for (int it = 0; it < m_ntm; ++it) {
+        s5 >> number;
+        m_mu_table[mu_index(IA_S, in, it)] = log(number);
+  }}
   
   for (int in = 0; in < m_nm; ++in) {
     getline(EOSinput, EOSline);
     stringstream s5(EOSline);
       for (int it = 0; it < m_ntm; ++it) {
         s5 >> number;
-        m_mu_table[mu_index(IA_S, in, it)] = number;
+        m_mu_table[mu_index(IL_MU, in, it)] = number;
   }}
 
   for (int in = 0; in < m_nm; ++in) {
