@@ -20,7 +20,7 @@ template<int species>
 double find_guess_eta(double nLep, double T) {
         double nq;
 
-        if constexpr(species == 1) {
+        if constexpr(species == 0) {
                 const double t = T/kB; //temp in K
                 const double nfm = nLep*1.e-39; //number density in fm^{-3}
                 const double pF = h*c*pow(3.*nLep/(8.*pi),1./3.); //[MeV]
@@ -37,7 +37,7 @@ double find_guess_eta(double nLep, double T) {
                         nq = 8.*pi*pow(T/(h*c),3.); //classical UR
                         return -log(fabs(2.*nq/nLep)) - (me/T);
                 }
-        } else if constexpr(species == 2) {
+        } else if constexpr(species == 1) {
         //.........Find the guess
                 nq = pow(2.*pi*mmu*T/(h*h*c*c),1.5); //cm^{-3}
                 return -log(fabs(2.*nq/nLep));
@@ -56,11 +56,11 @@ double rtsafe(const double nLep, const double T, const double guess) {
         const double xacc = 1.e-7; //set the accuracy for Newton Rapsondouble xh,xl;
         double x1, x2, mLep;
 
-        if constexpr(species == 1) {
+        if constexpr(species == 0) {
                 mLep = me;
                 x1 = e_tab_lim.eta_min;
                 x2 = e_tab_lim.eta_max;
-        } else if constexpr(species == 2) {
+        } else if constexpr(species == 1) {
                 mLep = mmu;
                 x1 = mu_tab_lim.eta_min;
                 x2 = mu_tab_lim.eta_max;
@@ -102,8 +102,10 @@ double rtsafe(const double nLep, const double T, const double guess) {
                         rts -= dx;
                         if (temp == rts) return rts;
                 }
-                if (fabs(dx) < xacc) return rts; //Convergence criterion.
-
+                if (fabs(dx) < xacc) {
+			//std::cout << std::endl << "Num steps: " << j << std::endl;
+			return rts; //Convergence criterion.
+		}
                 f=n_net_f(rts, T, mLep)-nLep;
                 df=n_net_df(rts, T, mLep); //The one new function evaluation per iteration.
 
@@ -128,11 +130,11 @@ double rtsafe_mod(const double nLep, const double T, const double guess, struct 
         const double xacc = 1.e-7; //set the accuracy for Newton Rapsondouble xh,xl;
         double x1, x2, mLep;
 
-        if constexpr(species == 1) {
+        if constexpr(species == 0) {
                 mLep = me;
                 x1 = e_tab_lim.eta_min;
                 x2 = e_tab_lim.eta_max;
-        } else if constexpr(species == 2) {
+        } else if constexpr(species == 1) {
                 mLep = mmu;
                 x1 = mu_tab_lim.eta_min;
                 x2 = mu_tab_lim.eta_max;

@@ -14,7 +14,7 @@
 
 using namespace std;
 
-const bool with_mu = true;
+const bool with_mu = false;
 
 void compute_EOS(EOS_assembled *eos, double nb, double T, double *Y) {
 	std::cout << "Input quantities: " << std::endl;
@@ -36,7 +36,7 @@ void compute_EOS(EOS_assembled *eos, double nb, double T, double *Y) {
 	double mu_num = 0.;
 	if (with_mu == true) mu_num = mu_p - mu_n + mu_m;
 	
-	const double e = MeV*1.e39*(eos->Energy(nb, T, Y) - mb*nb) + 1.e39*8.265e18*mb/(c*c)*MeV*nb; //erg/cm3
+	const double e = MeV*1.e39*(eos->Energy(nb, T, Y) - mb*nb); // + 1.e39*8.265e18*mb/(c*c)*MeV*nb; //erg/cm3
 	const double p = MeV*1.e39*eos->Pressure(nb, T, Y);
 
 	const double ye = Y[0];
@@ -118,9 +118,10 @@ int main() {
 	eos.ReadETableFromFile("/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module/eos_table/electrons/eos_electrons_primitive_new.txt");
 	if (with_mu == true) eos.ReadMTableFromFile("/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module/eos_table/muons/eos_muons_primitive_new.txt");
 	
-	double nb = 0.251188644;    // fm-3
-        double T  = 19.0546059;     // MeV
-        double Y[2] = {0.31,0.01};  // #/baryons
+	double nb = 1.20226528E+34*1.e-39;    // fm-3
+        double T  = 6.30957362E+00;  //1.31825639E+02;     // MeV
+        double Y[2] = {7.00000003E-02,0.00}; //{5.79999983E-01,0.00};  // #/baryons
+
 	
 	compute_EOS(&eos, nb, T, Y);
 	

@@ -27,6 +27,8 @@ OBJECTS := $(patsubst $(SRC_DIR)%.cpp, $(COMPILE_DIR)src/%.o, $(SOURCES))
 TABLES_SRC := $(wildcard $(TABLES_DIR)*.cpp) 
 TABLES_OBJ := $(patsubst $(TABLES_DIR)%.cpp, $(TABLES_DIR)compile/%.o, $(TABLES_SRC))
 
+LEP_SRC := $(SRC_DIR)complete_FG.cpp $(SRC_DIR)FD_functions.cpp $(SRC_DIR)find_eta.cpp $(SRC_DIR)eos_fermions.cpp
+LEP_OBJ := $(patsubst $(SRC_DIR)%.cpp, $(COMPILE_DIR)src/%.o, $(LEP_SRC))
 
 TESTS_SRC := $(wildcard $(TESTS_DIR)*.cpp)
 TESTS_OBJ := $(patsubst $(TESTS_DIR)%.cpp, $(COMPILE_DIR)%.o, $(TESTS_SRC))
@@ -61,14 +63,14 @@ generate_table: lep_table
 eta_table: $(OBJECTS) $(TABLES_DIR)compile/generate_eta_table.o
 	$(CXX) $(RFLAGS) $(INCLUDE) $(OBJECTS) $(TABLES_DIR)compile/generate_eta_table.o -o $(TABLES_DIR)compile/generate_eta_table
 
-complete_table: $(OBJECTS) $(TABLES_DIR)compile/generate_complete_table.o
-	$(CXX) $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) $(OBJECTS) $(TABLES_DIR)compile/generate_complete_table.o -o $(TABLES_DIR)compile/generate_complete_table $(H5_LIB) $(H5_FLAGS)
-
-lep_table: $(OBJECTS) $(TABLES_DIR)compile/generate_lep_table.o
-	$(CXX) $(RFLAGS) $(INCLUDE) $(OBJECTS) $(TABLES_DIR)compile/generate_lep_table.o -o $(TABLES_DIR)compile/generate_lep_table
+lep_table: $(LEP_OBJ) $(TABLES_DIR)compile/generate_lep_table.o
+	$(CXX) $(RFLAGS) $(INCLUDE) $(LEP_OBJ) $(TABLES_DIR)compile/generate_lep_table.o -o $(TABLES_DIR)compile/generate_lep_table
 
 global_table: $(OBJECTS) $(TABLES_DIR)compile/generate_global_table.o
 	$(CXX) $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) $(OBJECTS) $(TABLES_DIR)compile/generate_global_table.o -o $(TABLES_DIR)compile/generate_global_table $(H5_LIB) $(H5_FLAGS)
+
+comparison_table: $(OBJECTS) $(TABLES_DIR)compile/generate_comparison_table.o
+	$(CXX) $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) $(OBJECTS) $(TABLES_DIR)compile/generate_comparison_table.o -o $(TABLES_DIR)compile/generate_comparison_table $(H5_LIB) $(H5_FLAGS)
 
 $(COMPILE_DIR)%.o: $(TESTS_DIR)%.cpp
 	$(CXX) $(RFLAGS) $(INCLUDE) -c -o $@ $<

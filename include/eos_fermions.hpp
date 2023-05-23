@@ -7,7 +7,6 @@
 #include "interp.hpp"
 #include "constants.hpp"
 #include "complete_FG.hpp"
-#include "eos_leptons.hpp"
 
 using namespace constants;
 
@@ -174,8 +173,8 @@ std::array<double,4> der_cs2(const double nLep, const double temp) {
 	const double a_f52_dT = (a_f52 - 4.*a_f32_dT) / (2.*theta);
 	const double a_f52_dn = theta*a_f32_dT + 2.5*a_f32;
 
-	const double s = -eta*f12-a_eta*a_f12+(5./3.-eta*theta)*f32+(5./3.-a_eta*theta)*a_f32+4./3.*theta*(f52+a_f52); //erg/K/cm^3
-	const double n = f12+a_f12+theta*(f32+a_f32);
+	//const double s = -eta*f12-a_eta*a_f12+(5./3.-eta*theta)*f32+(5./3.-a_eta*theta)*a_f32+4./3.*theta*(f52+a_f52); //erg/K/cm^3
+	//const double n = f12+a_f12+theta*(f32+a_f32);
 
 	const double dn = f12_dn+a_f12_dn + theta*(f32_dn+a_f32_dn);
 	der_array[0] = mL[species]/3. * theta * (2.*(f32_dn-a_f32_dn) + theta*(f52_dn-a_f52_dn)) / dn;
@@ -239,8 +238,8 @@ std::array<double,4> der_cs2_num(const double nLep, const double temp) {
 template <int id_EOS, int species>
 std::array<double,9> eos_ferm_single(double nLep, double temp) {
         std::array<double,9> eos_array;
-	const double guess = find_guess_eta<species+1>(1.e39*nLep, temp);
-	const double eta = rtsafe<species+1>(1.e39*nLep, temp, guess);
+	const double guess = find_guess_eta<species>(1.e39*nLep, temp);
+	const double eta = rtsafe<species>(1.e39*nLep, temp, guess);
         const double theta = temp/mL[species];
 
 //.......Degeneracy parameter of anti-leptons
