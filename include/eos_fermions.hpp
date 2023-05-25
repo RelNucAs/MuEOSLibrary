@@ -173,16 +173,13 @@ std::array<double,4> der_cs2(const double nLep, const double temp) {
 	const double a_f52_dT = (a_f52 - 4.*a_f32_dT) / (2.*theta);
 	const double a_f52_dn = theta*a_f32_dT + 2.5*a_f32;
 
-	//const double s = -eta*f12-a_eta*a_f12+(5./3.-eta*theta)*f32+(5./3.-a_eta*theta)*a_f32+4./3.*theta*(f52+a_f52); //erg/K/cm^3
-	//const double n = f12+a_f12+theta*(f32+a_f32);
-
 	const double dn = f12_dn+a_f12_dn + theta*(f32_dn+a_f32_dn);
+	
 	der_array[0] = mL[species]/3. * theta * (2.*(f32_dn-a_f32_dn) + theta*(f52_dn-a_f52_dn)) / dn;
 	der_array[1] = (-f12+a_f12-eta*f12_dn+a_eta*a_f12_dn+5./3.*(f32_dn-a_f32_dn) - theta*(f32-a_f32+eta*f32_dn-a_eta*a_f32_dn-4./3.*(f52_dn-a_f52_dn))) / dn;
-	//der_array[1] = der_array[1] - s/n;
 	der_array[2] = K3[species] * pow(theta,1.5) * (5.*(f32+a_f32) + theta*(3.5*(f52+a_f52)+2.*(f32_dT+a_f32_dT)) + theta*theta*(f52_dT+a_f52_dT));
 	der_array[3] = K[species]/mL[species] * pow(theta,0.5) * (-1.5*(eta*f12+a_eta*a_f12) + 2.5*(f32+a_f32)
-						+ theta*(-2.5*(eta*f32+a_eta*a_f32) + 10./3.*(f52*a_f52) - (eta*f12_dT+a_eta*a_f12_dT) 
+						+ theta*(-2.5*(eta*f32+a_eta*a_f32) + 10./3.*(f52+a_f52) - (eta*f12_dT+a_eta*a_f12_dT) 
 							+ 5./3.*(f32_dT+a_f32_dT))
 						+ theta*theta * (-(eta*f32_dT+a_eta*a_f32_dT) + 4./3.*(f52_dT+a_f52_dT)));
 	return der_array;
@@ -199,8 +196,8 @@ std::array<double,4> der_cs2_num(const double nLep, const double temp) {
 	const double g   = find_guess_eta<species>(1.e39*nLep, temp);
 	const double eta = rtsafe<species>(1.e39*nLep, temp, g);
 	
-	const double eps_t = temp*0.02;
-	const double eps_n = nLep*0.02;
+	const double eps_t = temp*0.005;
+	const double eps_n = nLep*0.005;
 
 	const double temp_1 = temp - eps_t;
 	const double temp_2 = temp + eps_t;

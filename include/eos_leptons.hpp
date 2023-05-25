@@ -9,7 +9,7 @@
 #include <cassert>
 #include "eos_fermions.hpp"
 
-constexpr int id_test = 2;
+constexpr int id_test = 1;
 
 class EOS_leptons {
   public:

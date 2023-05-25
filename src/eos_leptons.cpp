@@ -70,7 +70,7 @@ double EOS_leptons::EdPdt(double n, double T, double *Y) {
 
 double EOS_leptons::Edsdt(double n, double T, double *Y) {
   assert(m_el_initialized);
-  return eval_el_at_nty(ID_DSDT, n, T, Y[id_e]);
+  return eval_el_at_nty(ID_DSDT, n, T, Y[id_e]) / n;
 }
 
 double EOS_leptons::MdPdn(double n, double T, double *Y) {

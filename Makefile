@@ -24,6 +24,9 @@ TABLES_DIR := $(CURDIR)/eos_table/
 SOURCES := $(wildcard $(SRC_DIR)*.cpp)
 OBJECTS := $(patsubst $(SRC_DIR)%.cpp, $(COMPILE_DIR)src/%.o, $(SOURCES)) 
 
+TMP_SOURCES = $(filter-out %eos_fermions.cpp,$(SOURCES))
+TMP_OBJECTS = $(filter-out %eos_fermions.o,$(OBJECTS))
+
 TABLES_SRC := $(wildcard $(TABLES_DIR)*.cpp) 
 TABLES_OBJ := $(patsubst $(TABLES_DIR)%.cpp, $(TABLES_DIR)compile/%.o, $(TABLES_SRC))
 
@@ -33,11 +36,11 @@ LEP_OBJ := $(patsubst $(SRC_DIR)%.cpp, $(COMPILE_DIR)src/%.o, $(LEP_SRC))
 TESTS_SRC := $(wildcard $(TESTS_DIR)*.cpp)
 TESTS_OBJ := $(patsubst $(TESTS_DIR)%.cpp, $(COMPILE_DIR)%.o, $(TESTS_SRC))
 
-all: $(OBJECTS) main
-	ar rcs $(COMPILE_DIR)libout.a $(OBJECTS)
+all: $(TMP_OBJECTS) main
+	ar rcs $(COMPILE_DIR)libout.a $(TMP_OBJECTS)
 
 main: main.o $(OBJECTS)
-	$(CXX) $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) $(OBJECTS) main.o -o main $(H5_LIB) $(H5_FLAGS)
+	$(CXX) $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) $(TMP_OBJECTS) main.o -o main $(H5_LIB) $(H5_FLAGS)
 
 run: test_performance test_eos
 	$(COMPILE_DIR)test_eos_performance; $(COMPILE_DIR)test_eos
