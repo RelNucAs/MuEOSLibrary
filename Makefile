@@ -89,10 +89,11 @@ $(TESTS_DIR)compile/%.o: $(TESTS_DIR)%.cpp
 
 $(TABLES_DIR)compile/%.o: $(TABLES_DIR)%.cpp
 	$(CXX) $(RFLAGS) $(INCLUDE) -c -o $@ $<
+
 clean:
-	find $(COMPILE_DIR) -type f -exec rm -f {} +
-	rm -v -f $(COMPILE_DIR)src/*
-	rm -v -f $(TABLES_DIR)compile/*
+	rm -v -f $(COMPILE_DIR)src/*.o
+	rm -v -f $(TABLES_DIR)compile/*.o
 	rm -v -f main.o
 	rm -v -f ./main
+#find $(COMPILE_DIR) -type f -exec rm -v -f {} +
 
