@@ -5,8 +5,6 @@
 
 #include <tr1/cmath>
 
-#include <ps_types.hpp>
-
 namespace radiation {
 
 const double zeta3 = std::tr1::riemann_zeta(3.);

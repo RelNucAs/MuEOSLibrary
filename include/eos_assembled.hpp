@@ -9,6 +9,8 @@
 #include <eos_leptons.hpp>
 #include <eos_baryons.hpp>
 
+constexpr int id_test = 2;
+
 class EOS_assembled : public EOS_baryons, public EOS_leptons {
     
     public:
