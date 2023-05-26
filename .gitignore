@@ -53,8 +53,8 @@ nu_rates
 *.tab
 
 # G++ compile
-tests/compile/*
-eos_table/compile/*
+tests/compile/*.o
+eos_table/compile/*.o
 main
 
 # HDF5 tables
