@@ -9,8 +9,6 @@
 #include <cassert>
 #include "eos_fermions.hpp"
 
-constexpr int id_test = 1;
-
 class EOS_leptons {
   public:
     enum EOSQuantities {
