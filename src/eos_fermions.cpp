@@ -4,7 +4,6 @@
 
 #include "complete_FG.hpp"
 #include "find_eta.hpp"
-#include "interp.hpp"
 #include "eos_fermions.hpp"
 
 std::array<double,9> eos_ferm_onthefly(const double eta, const double T, const int id_L) {

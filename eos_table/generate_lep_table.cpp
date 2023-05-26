@@ -90,7 +90,7 @@ void make_lep_table() {
         std::vector<std::array<double,4>> der_out;
 
 	string eta_filename   = abs_path + "eos_table/" + sp + "/eos_" + sp + "_eta"+res+".txt";
-        string table_filename = abs_path + "eos_table/" + sp + "/eos_" + sp + "_primitive_new_cs2"+res+".txt";
+        string table_filename = abs_path + "eos_table/" + sp + "/eos_" + sp + "_primitive_new_cs2_num_fine_log"+res+".txt";
 
         cout << "Generating complete table for " << sp << " with :" << endl;
         cout << "# n points = " << n1 << ", # t points = " << n2 << " (HR = " << HR << ")" << endl;
@@ -150,8 +150,8 @@ void make_lep_table() {
 
 			// Check species
 			eos_out.push_back(eos_ferm_onthefly(eta, temp, species));
-                        der_out.push_back(der_cs2<species>(nLep, temp));
-                        //der_out.push_back(der_cs2_num<species>(nLep, temp));
+                        //der_out.push_back(der_cs2<species>(nLep, temp));
+                        der_out.push_back(der_cs2_num<species>(nLep, temp));
 		}
 		Ieta << "\n";
 	}
