@@ -94,15 +94,14 @@ int main () {
 	EOS_assembled eos;
 
 	/* Read EOS tables (electron table is read just to initialize the class but is not used) */
-        eos.ReadBarTableFromFile("/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module/eos_table/baryons/DD2_bar.h5");
-        eos.EOS_leptons<0>::ReadLepTableFromFile("/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module/eos_table/electrons/eos_electrons_primitive_new.txt");
+        eos.ReadBarTableFromFile(abs_path + "eos_table/baryons/DD2_bar.h5");
 	eos.EOS_leptons<0>::m_lep_active = true;
 
 	/* Define name of output table */
 	std::string table_name = "eos_comparison_wo_mu.txt";
 
 	/* Output stream */
-	std::ofstream Iout("/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module/eos_table/global/"+table_name);
+	std::ofstream Iout(abs_path + "eos_table/global/"+table_name);
 	
 	/* Define table input paramters
 	

@@ -54,7 +54,7 @@ nu_rates
 
 # G++ compile
 tests/compile/*.o
-eos_table/compile/*.o
+eos_table/compile/*
 main
 
 # HDF5 tables

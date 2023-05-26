@@ -102,14 +102,12 @@ int main () {
         }
         std::cout << "#####################" << std::endl;
         std::cout << std::endl;
-        
+
 	/* Global EOS class */
 	EOS_assembled eos;
 
 	/* Read EOS tables (electron and muon tables are read just to initialize the class but they are not used) */
-        eos.ReadBarTableFromFile("/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module/eos_table/baryons/DD2_bar.h5");
-        eos.EOS_leptons<0>::ReadLepTableFromFile("/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module/eos_table/electrons/eos_electrons_primitive_new.txt");
-	eos.EOS_leptons<1>::ReadLepTableFromFile("/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module/eos_table/muons/eos_muons_primitive_new.txt");
+        eos.ReadBarTableFromFile("eos_table/baryons/DD2_bar.h5");
         eos.EOS_leptons<0>::m_lep_active = true;
 	if (with_mu == true) eos.EOS_leptons<1>::m_lep_active = true;
 
@@ -123,7 +121,7 @@ int main () {
 	}
 
 	/* Output stream */
-	std::ofstream Iout("/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module/eos_table/global/"+table_name);
+	std::ofstream Iout("eos_table/global/"+table_name);
 	
 	/* Define table input paramters
 	
