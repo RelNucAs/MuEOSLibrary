@@ -22,7 +22,9 @@ abs_path = "/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module/"
 table_folder = abs_path + "eos_table/"
 plot_folder = abs_path + "tests/output/"
 
-num_file = table_folder + sp + '/eos_'+sp+'_primitive_new_cs2_num_coarse.txt'
+
+num_file = table_folder + sp + '/eos_'+sp+'_primitive_new_cs2_num_coarse.txt' #_fine_log.txt"
+
 n1  = np.loadtxt(num_file,skiprows=0      ,max_rows=1,dtype=int)
 n2  = np.loadtxt(num_file,skiprows=1      ,max_rows=1,dtype=int)
 ne_array = 10.**(np.loadtxt(num_file,skiprows=2,max_rows=1,dtype=float))
@@ -88,5 +90,6 @@ for id_ax in range(nncols):
     if (id_col == 0):
         for i in range(nnrows):
             axs[i,id_col].set_ylabel("Temperature [MeV]")
-plt.savefig(plot_folder+sp+"/compare_lep_der_coarse.png", dpi=200, bbox_inches="tight")
+
+plt.savefig(plot_folder+sp+"/compare_lep_der_coarse.png", dpi=200, bbox_inches="tight") #"/compare_lep_der_fine_log.png"
 plt.close()

@@ -53,7 +53,7 @@ nu_rates
 *.tab
 
 # G++ compile
-tests/compile/*.o
+tests/compile/*
 eos_table/compile/*
 main
 
