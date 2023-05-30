@@ -38,6 +38,7 @@ void compute_EOS(EOS_assembled *eos, double nb, double T, double *Y) {
 	
 	const double e = MeV*1.e39*(eos->Energy(nb, T, Y) - mb*nb); // + 1.e39*8.265e18*mb/(c*c)*MeV*nb; //erg/cm3
 	const double p = MeV*1.e39*eos->Pressure(nb, T, Y);
+	const double s = eos->Entropy(nb, T, Y);
 
 	const double ye = Y[0];
 	const double ym = Y[1];
@@ -62,21 +63,28 @@ void compute_EOS(EOS_assembled *eos, double nb, double T, double *Y) {
 	const double zanum = anu_energy(nb, T, mu_num/T);
 	const double znux  = nu_energy(nb, T, 0.);
 	
+	const double snue  = nu_entropy(nb, T, mu_nue/T);
+	const double sanue = anu_entropy(nb, T, mu_nue/T);
+	const double snum  = nu_entropy(nb, T, mu_num/T);
+	const double sanum = anu_entropy(nb, T, mu_num/T);
+	const double snux  = nu_energy(nb, T, 0.);
+	
 	const double u = e + 1.e39*nb * MeV * (znue + zanue + znum + zanum + 2. * znux);
 	const double ptot = p + 1.e39*nb * MeV * (znue + zanue + znum + zanum + 2. * znux) / 3.;
+	const double stot = s + (snue + sanue + snum + sanum + 2. * snux);
 
 	std::cout << "Output quantities: " << std::endl;
 	std::cout << "d            = " << d         << " " << "g/cm3"      << std::endl;	
-	std::cout << "yle          = " << yle       << " " << "#/baryon"      << std::endl;	
-	std::cout << "ylm          = " << ylm       << " " << "#/baryon"      << std::endl;	
-	std::cout << "u            = " << u         << " " << "erg/cm3"      << std::endl;	
+	std::cout << "yle          = " << yle       << " " << "#/baryon"   << std::endl;	
+	std::cout << "ylm          = " << ylm       << " " << "#/baryon"   << std::endl;	
+	std::cout << "u            = " << u         << " " << "erg/cm3"    << std::endl;	
 	std::cout << "nb           = " << 1.e39*nb  << " " << "1/cm3"      << std::endl;	
 	std::cout << "T            = " << T         << " " << "MeV"        << std::endl;	
 	std::cout << "Ye           = " << ye        << " " << "#/baryon"   << std::endl;	
 	std::cout << "Ym           = " << ym        << " " << "#/baryon"   << std::endl;	
 	std::cout << "e            = " << e         << " " << "erg/cm3"    << std::endl;
 	std::cout << "P            = " << ptot      << " " << "erg/cm3"    << std::endl;
-	//std::cout << "Entropy      = " << eos.Entropy(nb, T, Y)        << std::endl;
+	std::cout << "s            = " << stot      << " " << "#/baryon"   << std::endl;
 	std::cout << "Yh           = " << yh        << " " << "#/baryon"   << std::endl;
 	std::cout << "Ya           = " << ya        << " " << "#/baryon"   << std::endl;
 	std::cout << "Yp           = " << yp        << " " << "#/baryon"   << std::endl;
@@ -115,14 +123,13 @@ int main() {
 	std::cout << std::endl;
 
 	eos.ReadBarTableFromFile("/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module/eos_table/baryons/DD2_bar.h5");
-	eos.ReadETableFromFile("/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module/eos_table/electrons/eos_electrons_primitive_new.txt");
+	eos.ReadETableFromFile("/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module/eos_table/electrons/eos_electrons_primitive_new_cs2_num.txt");
 	if (with_mu == true) eos.ReadMTableFromFile("/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module/eos_table/muons/eos_muons_primitive_new.txt");
 	
 	double nb = 1.20226528E+34*1.e-39;    // fm-3
         double T  = 6.30957362E+00;  //1.31825639E+02;     // MeV
         double Y[2] = {7.00000003E-02,0.00}; //{5.79999983E-01,0.00};  // #/baryons
 
-	
 	compute_EOS(&eos, nb, T, Y);
 	
 	return 0;

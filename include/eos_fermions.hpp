@@ -196,6 +196,11 @@ std::array<double,4> der_cs2_num(const double nLep, const double temp) {
 	const double g   = find_guess_eta<species>(1.e39*nLep, temp);
 	const double eta = rtsafe<species>(1.e39*nLep, temp, g);
 	
+	std::array<double,9> tmp = eos_ferm_onthefly(eta, temp, species);
+
+	const double P = tmp[2]+tmp[3];
+	const double s = tmp[6]+tmp[7];
+
 	const double eps_t = temp*0.005;
 	const double eps_n = nLep*0.005;
 
@@ -214,8 +219,8 @@ std::array<double,4> der_cs2_num(const double nLep, const double temp) {
 	std::array<double,9> tmp_1 = eos_ferm_onthefly(eta_1, temp, species);
 	std::array<double,9> tmp_2 = eos_ferm_onthefly(eta_2, temp, species);
 
-        der_array[0] = (tmp_2[2]+tmp_2[3] - (tmp_1[2]+tmp_1[3])) / (nLep_2-nLep_1);
-        der_array[1] = (tmp_2[6]+tmp_2[7] - (tmp_1[6]+tmp_1[7])) / (nLep_2-nLep_1);
+        der_array[0] = P * (log(tmp_2[2]+tmp_2[3]) - log(tmp_1[2]+tmp_1[3])) / (nLep_2-nLep_1);
+        der_array[1] = s * (log(tmp_2[6]+tmp_2[7]) - log(tmp_1[6]+tmp_1[7])) / (nLep_2-nLep_1);
 
 	g1    = find_guess_eta<species>(1.e39*nLep, temp_1);
 	eta_1 = rtsafe<species>(1.e39*nLep, temp_1, g1);
@@ -226,8 +231,8 @@ std::array<double,4> der_cs2_num(const double nLep, const double temp) {
 	tmp_1 = eos_ferm_onthefly(eta, temp_1, species);
 	tmp_2 = eos_ferm_onthefly(eta, temp_2, species);
 
-        der_array[2] = (tmp_2[2]+tmp_2[3] - (tmp_1[2]+tmp_1[3])) / (temp_2-temp_1);
-        der_array[3] = (tmp_2[6]+tmp_2[7] - (tmp_1[6]+tmp_1[7])) / (temp_2-temp_1);
+        der_array[2] = P * (log(tmp_2[2]+tmp_2[3]) - log(tmp_1[2]+tmp_1[3])) / (temp_2-temp_1);
+        der_array[3] = s * (log(tmp_2[6]+tmp_2[7]) - log(tmp_1[6]+tmp_1[7])) / (temp_2-temp_1);
 
         return der_array;
 }

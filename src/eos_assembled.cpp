@@ -85,9 +85,8 @@ double EOS_assembled::SoundSpeed(double n, double T, double *Y) {
   double const dsdn = Bardsdn(n, T, Y) + Edsdn(n, T, Y) + Mdsdn(n, T, Y) - (RadEntropy(T) / (n*n));
   double const dPdt = BardPdT(n, T, Y) + EdPdt(n, T, Y) + MdPdt(n, T, Y) + RaddPdT(T);
   double const dsdt = BardsdT(n, T, Y) + Edsdt(n, T, Y) + Mdsdt(n, T, Y) + (RaddsdT(T)/n);
-  //double const cs2 = sqrt(std::max(1.e-6,(dPdn - dsdn/dsdt*dPdt) / ((BarPressure(n, T, Y) + BarEnergy(n, T, Y)) / n)));
   double const cs2 = sqrt(std::max(1.e-6,(dPdn - dsdn/dsdt*dPdt) / Enthalpy(n, T, Y)));
-  if (cs2 >= 1.) cout << "cs2 > 1!" << endl;
+  //if (cs2 >= 1.) cout << "cs2 > 1!" << endl;
   //cout << "dPdn = " << dPdn << "\t" << "dsdn = " << dsdn << "\t" << "dPdt = " << dPdt << "\t" << "dsdt = " << dsdt << endl << endl; 
   return cs2;
 }

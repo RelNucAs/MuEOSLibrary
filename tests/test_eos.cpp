@@ -12,7 +12,7 @@
 #include "interp.hpp"
 #include "eos_fermions.hpp"
 #include "find_eta.hpp"
-#include "eos_tabulated.hpp"
+#include "eos_assembled.hpp"
 
 using namespace constants;
 using namespace std;
@@ -97,28 +97,42 @@ void test_lep_eos(const double nLep, const double temp) {
 
 int main (){
 	double n_e, n_mu, temp;
-	EOS_leptons eos;	
-	eos.ReadTableFromFile("/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module/eos_table/electrons/eos_electrons_complete_leo.txt");
-	const double * test = eos.GetRawLogNumberDensity();
-	for (int i=0; i<eos.m_nl; i++) {
-		cout << pow(10.,test[i]) << endl;
-	}
-	n_e = 1.e-03; //fm-3
-	temp = 1.e+00; //MeV
-
-	cout << "Testing accuracy of electron/positron EOS in a single (n_e,T) point:" << endl;
-	cout << "n_e = " << n_e << " fm-3, T = " << temp << " MeV (theta = " << temp/me << ")" << endl << endl;
-	test_lep_eos<1>(ne, temp); //1: electrons
-
-	n_mu = 1.e-05; //fm-3
-	temp = 1.e+00; //MeV
-
-	cout << "Testing accuracy of (anti)muon EOS in a single (n_mu,T) point:" << endl;
-	cout << "n_mu = " << n_mu << " fm-3, T = " << temp << " MeV (theta = " << temp/mmu << ")" << endl << endl;
-	test_lep_eos<2>(n_mu, temp); //2: muons
+	//EOS_leptons eos;	
+	//eos.ReadETableFromFile("/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module/eos_table/electrons/eos_electrons_complete_leo.txt");
+	//const double * test = eos.GetRawELogNumberDensity();
+	//for (int i=0; i<eos.m_ne; i++) {
+	//	cout << pow(10.,test[i]) << endl;
 	
-	std::array<double,4> tmp1 = der_cs2<1>(ne, temp);
-	std::array<double,4> tmp2 = der_cs2_num<1>(ne, temp);
+	n_e  = 1.54223401E-14; //fm-3
+	temp = 5.12913428E-02; //MeV
+	//double Ye[1] = {1.};	
+
+        //double guess = find_guess_eta<1>(1.e39*n_e, temp);
+        //double eta = rtsafe<1>(1.e39*n_e, temp, guess);
+	//std::array<double,9> tmp = eos_ferm_onthefly(eta, temp, 0);
+	//for (int i=0;i<9;i++) cout << tmp[i]*1.e39*MeV << endl;
+        	
+                //return eos_ferm_fromNR<species>(nLep, t);
+
+
+
+	//cout << eos.ElectronPressure(n_e, temp, Ye) * 1.e39 / MeV << endl;
+
+	//exit(EXIT_SUCCESS);
+	//cout << "Testing accuracy of electron/positron EOS in a single (n_e,T) point:" << endl;
+	//cout << "n_e = " << n_e << " fm-3, T = " << temp << " MeV (theta = " << temp/me << ")" << endl << endl;
+	//test_lep_eos<1>(n_e, temp); //1: electrons
+
+
+	//n_mu = 1.e-05; //fm-3
+	//temp = 1.e+00; //MeV
+
+	//cout << "Testing accuracy of (anti)muon EOS in a single (n_mu,T) point:" << endl;
+	//cout << "n_mu = " << n_mu << " fm-3, T = " << temp << " MeV (theta = " << temp/mmu << ")" << endl << endl;
+	//test_lep_eos<2>(n_mu, temp); //2: muons
+	
+	std::array<double,4> tmp1 = der_cs2<1>(n_e, temp);
+	std::array<double,4> tmp2 = der_cs2_num<1>(n_e, temp);
 	for (int i=0;i<4;i++) cout << "der_" << i << " = " << tmp1[i] << endl;
 	for (int i=0;i<4;i++) cout << "der_" << i << " = " << tmp2[i] << endl;
 	return 0;
