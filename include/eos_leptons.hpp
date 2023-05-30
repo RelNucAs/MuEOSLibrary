@@ -2,13 +2,24 @@
 #define EOS_LEPTONS_H
 
 //! \file eos_leptons.hpp
-//  \brief Defines EOSTable, which stores information from a tabulated
-//         equation of state
+//  \brief Implementation of EOS_leptons
 
-#include <array>
+#include <algorithm>
 #include <cassert>
+#include <cmath>
+#include <cstdio>
+#include <limits>
+#include <sstream>
+#include <stdexcept>
+#include <iostream>
+#include <fstream>
+#include <array>
+
 #include "eos_fermions.hpp"
 
+using namespace std; 
+
+template <int idx_lep>
 class EOS_leptons {
   public:
     enum EOSQuantities {
@@ -30,292 +41,459 @@ class EOS_leptons {
     };
     
     static const int nEOS = NVARS;
-  
+
+  private:
+    // Inverse of table spacing
+    double m_id_log_nl, m_id_log_tl;
+
+    // Table storage, care should be made to store these data on the GPU later
+    double * m_log_nl;
+    double * m_log_tl;
+    double * m_lep_table;
+
+    //const int idx_lep  = 0;
+    //const int idx_lep = 1;
+
+  public:
+    // Table size
+    int m_nl, m_ntl;
+
+  private:    
+    bool m_lep_initialized;
+
+  public:
+    bool m_lep_active;
+
   public:
     /// Constructor
-    EOS_leptons();
+    EOS_leptons():
+      m_id_log_nl(std::numeric_limits<double>::quiet_NaN()),
+      m_id_log_tl(std::numeric_limits<double>::quiet_NaN()),
+      m_log_nl(nullptr),
+      m_log_tl(nullptr),
+      m_lep_table(nullptr),
+      m_nl(0), m_ntl(0),
+      m_lep_initialized(false),
+      m_lep_active(false) {};
 
+  
     /// Destructor
-    ~EOS_leptons();
-
-    /// Calculate the number density of electrons using.
-    template <int id_EOS>
-    double ElectronNumberDensity(double n, double T, double *Y) {
-        if constexpr(id_EOS == 1) {
-            assert(m_el_initialized);
-            return exp(eval_el_at_nty(IL_N, n, T, Y[id_e]));
-        } else if constexpr(id_EOS == 2) {
-            return eos_ferm_single<id_EOS,0>(n*Y[id_e], T)[IL_N];
-        }
-    }
-
-    /// Calculate the number density of positrons using.
-    template <int id_EOS>
-    double PositronNumberDensity(double n, double T, double *Y) {
-      //assert(m_el_initialized);
-      //return exp(eval_el_at_nty(IA_N, n, T, Y[id_e]));
-      return ElectronNumberDensity<id_EOS>(n, T, Y) - n*Y[id_e];
-    }
-
-    /// Calculate the number density of muons using.
-    template <int id_EOS>
-    double MuonNumberDensity(double n, double T, double *Y) {
-      if (m_mu_initialized) {
-        if constexpr(id_EOS == 1) {
-            assert(m_mu_initialized);
-            return exp(eval_mu_at_nty(IL_N, n, T, Y[id_mu]));
-        } else if constexpr(id_EOS == 2) {
-	    return eos_ferm_single<id_EOS,1>(n*Y[id_mu], T)[IL_N];
-        }
-      } else {
-        return 0.;
+    ~EOS_leptons() {
+      if (m_lep_initialized) {
+        delete[] m_log_nl;
+        delete[] m_log_tl;
+        delete[] m_lep_table;
       }
     }
 
-    /// Calculate the number density of anti-muons using.
+    /// Calculate the number density of leptons using.
     template <int id_EOS>
-    double AntiMuonNumberDensity(double n, double T, double *Y) {
-      //assert(m_mu_initialized);
-      //return exp(eval_mu_at_nty(IA_N, n, T, Y[id_mu]));
-      if (m_mu_initialized) {
-      return MuonNumberDensity<id_EOS>(n, T, Y) - n*Y[id_mu];
-      } else {
-        return 0.;
-      }
-    }
-    
-    /// Calculate the internal energy density of electrons + positrons using.
-    template <int id_EOS>
-    double ElectronEnergy(double n, double T, double *Y) {
+    double LepNumberDensity(double n, double T, double *Y) {
+      if (m_lep_active) {
 	if constexpr(id_EOS == 1) {
-            assert(m_el_initialized);
-            return exp(eval_el_at_nty(IL_E, n, T, Y[id_e])) + exp(eval_el_at_nty(IA_E, n, T, Y[id_e]));
+          assert(m_lep_initialized);
+          return exp(eval_lep_at_nty(IL_N, n, T, Y[idx_lep]));
         } else if constexpr(id_EOS == 2) {
-	    return eos_ferm_single<id_EOS,0>(n*Y[id_e], T)[IL_E] + eos_ferm_single<id_EOS,0>(n*Y[id_e], T)[IA_E]; 
-        }
-    }
-
-    /// Calculate the internal energy density of muons + anti-muons using.
-    template <int id_EOS>
-    double MuonEnergy(double n, double T, double *Y) {
-      if (m_mu_initialized) {
-        if constexpr(id_EOS == 1) {
-            assert(m_mu_initialized);
-            return exp(eval_mu_at_nty(IL_E, n, T, Y[id_mu])) + exp(eval_mu_at_nty(IA_E, n, T, Y[id_mu]));
-        } else if constexpr(id_EOS == 2) {
-            return eos_ferm_single<id_EOS,1>(n*Y[id_mu], T)[IL_E] + eos_ferm_single<id_EOS,1>(n*Y[id_mu], T)[IA_E];
+          return eos_ferm_single<id_EOS,idx_lep>(n*Y[idx_lep], T)[IL_N];
         }
       } else {
-        return 0.;
+	return 0.;
       }
     }
-    
+
+    /// Calculate the number density of antileptons using.
+    template <int id_EOS>
+    double AntiLepNumberDensity(double n, double T, double *Y) {
+      if (m_lep_active) {
+        //assert(m_lep_initialized);
+        //return exp(eval_lep_at_nty(IA_N, n, T, Y[idx_lep]));
+        return LepNumberDensity<id_EOS>(n, T, Y) - n*Y[idx_lep];
+      } else {
+	return 0.;
+      }
+    }
+
     /// Calculate the internal energy density of leptons using.
     template <int id_EOS>
     double LepEnergy(double n, double T, double *Y) {
-        return ElectronEnergy<id_EOS>(n, T, Y) + MuonEnergy<id_EOS>(n, T, Y);	    
-    }
-
-    /// Calculate the pressure of electrons + positrons using.
-    template <int id_EOS>
-    double ElectronPressure(double n, double T, double *Y) {
-        if constexpr(id_EOS == 1) {
-            assert(m_el_initialized);
-            return exp(eval_el_at_nty(IL_P, n, T, Y[id_e])) + exp(eval_el_at_nty(IA_P, n, T, Y[id_e]));
+      if (m_lep_active) {
+	if constexpr(id_EOS == 1) {
+            assert(m_lep_initialized);
+            return exp(eval_lep_at_nty(IL_E, n, T, Y[idx_lep])) + exp(eval_lep_at_nty(IA_E, n, T, Y[idx_lep]));
         } else if constexpr(id_EOS == 2) {
-            return eos_ferm_single<id_EOS,0>(n*Y[id_e], T)[IL_P] + eos_ferm_single<id_EOS,0>(n*Y[id_e], T)[IA_P];
-        }
-    }
-
-    /// Calculate the pressure of muons + anti-muons using.
-    template <int id_EOS>
-    double MuonPressure(double n, double T, double *Y) {
-      if (m_mu_initialized) {
-        if constexpr(id_EOS == 1) {
-            assert(m_mu_initialized);
-            return exp(eval_mu_at_nty(IL_P, n, T, Y[id_mu])) + exp(eval_mu_at_nty(IA_P, n, T, Y[id_mu]));
-        } else if constexpr(id_EOS == 2) {
-            return eos_ferm_single<id_EOS,1>(n*Y[id_mu], T)[IL_P] + eos_ferm_single<id_EOS,1>(n*Y[id_mu], T)[IA_P];
+	    return eos_ferm_single<id_EOS,idx_lep>(n*Y[idx_lep], T)[IL_E] + eos_ferm_single<id_EOS,idx_lep>(n*Y[idx_lep], T)[IA_E]; 
         }
       } else {
-        return 0.;
+	return 0.;
       }
     }
-    
+
     /// Calculate the pressure of leptons using.
     template <int id_EOS>
     double LepPressure(double n, double T, double *Y) {
-        return ElectronPressure<id_EOS>(n, T, Y) + MuonPressure<id_EOS>(n, T, Y);
-    }
-
-    /// Calculate the entropy density of electrons + positrons using.
-    template <int id_EOS>
-    double ElectronEntropy(double n, double T, double *Y) {
+      if (m_lep_active) {
         if constexpr(id_EOS == 1) {
-            assert(m_el_initialized);
-            return exp(eval_el_at_nty(IL_S, n, T, Y[id_e])) + exp(eval_el_at_nty(IA_S, n, T, Y[id_e]));
+            assert(m_lep_initialized);
+            return exp(eval_lep_at_nty(IL_P, n, T, Y[idx_lep])) + exp(eval_lep_at_nty(IA_P, n, T, Y[idx_lep]));
         } else if constexpr(id_EOS == 2) {
-            return eos_ferm_single<id_EOS,0>(n*Y[id_e], T)[IL_S] + eos_ferm_single<id_EOS,0>(n*Y[id_e], T)[IA_S];
-        }
-    }
-
-    /// Calculate the entropy density of muons + anti-muons using.
-    template <int id_EOS>
-    double MuonEntropy(double n, double T, double *Y) {
-      if (m_mu_initialized) {
-        if constexpr(id_EOS == 1) {
-            assert(m_mu_initialized);
-            return exp(eval_mu_at_nty(IL_S, n, T, Y[id_mu])) + exp(eval_mu_at_nty(IA_S, n, T, Y[id_mu]));
-        } else if constexpr(id_EOS == 2) {
-            return eos_ferm_single<id_EOS,1>(n*Y[id_mu], T)[IL_S] + eos_ferm_single<id_EOS,1>(n*Y[id_mu], T)[IA_S];
+            return eos_ferm_single<id_EOS,idx_lep>(n*Y[idx_lep], T)[IL_P] + eos_ferm_single<id_EOS,idx_lep>(n*Y[idx_lep], T)[IA_P];
         }
       } else {
-        return 0.;
+	return 0.;
       }
     }
 
     /// Calculate the entropy density of leptons using.
     template <int id_EOS>
     double LepEntropy(double n, double T, double *Y) {
-        return ElectronEntropy<id_EOS>(n, T, Y) + MuonEntropy<id_EOS>(n, T, Y);
+      if (m_lep_active) {
+        if constexpr(id_EOS == 1) {
+            assert(m_lep_initialized);
+            return exp(eval_lep_at_nty(IL_S, n, T, Y[idx_lep])) + exp(eval_lep_at_nty(IA_S, n, T, Y[idx_lep]));
+        } else if constexpr(id_EOS == 2) {
+            return eos_ferm_single<id_EOS,idx_lep>(n*Y[idx_lep], T)[IL_S] + eos_ferm_single<id_EOS,idx_lep>(n*Y[idx_lep], T)[IA_S];
+        }
+      } else {
+	return 0.;
+      }
     }
 
-    /// Calculate the chemical potential of electrons using.
+    /// Calculate the chemical potential of leptons using.
     template <int id_EOS>
-    double ElectronChemicalPotential(double n, double T, double *Y) {
+    double LepChemicalPotential(double n, double T, double *Y) {
+      if (m_lep_active) {
         if constexpr(id_EOS == 1) {
-            assert(m_el_initialized);
-            return eval_el_at_nty(IL_MU, n, T, Y[id_e]);
+            assert(m_lep_initialized);
+            return eval_lep_at_nty(IL_MU, n, T, Y[idx_lep]);
         } else if constexpr(id_EOS == 2) {
-            return eos_ferm_single<id_EOS,0>(n*Y[id_e], T)[IL_MU];
+            return eos_ferm_single<id_EOS,idx_lep>(n*Y[idx_lep], T)[IL_MU];
         }
+      } else {
+	return 0.;
+      }
     }
 
-    /// Calculate the chemical potential of muons using.
+    /// Calculate the sound speed derivatives using.
     template <int id_EOS>
-    double MuonChemicalPotential(double n, double T, double *Y) {
-      if (m_mu_initialized) {
+    double LdPdn(double n, double T, double *Y) {
+      if (m_lep_active) {
         if constexpr(id_EOS == 1) {
-            assert(m_mu_initialized);
-            return eval_mu_at_nty(IL_MU, n, T, Y[id_mu]);
+            assert(m_lep_initialized);
+            return eval_lep_at_nty(ID_DPDN, n, T, Y[idx_lep])*Y[idx_lep];
         } else if constexpr(id_EOS == 2) {
-            return eos_ferm_single<id_EOS,1>(n*Y[id_mu], T)[IL_MU];
-        }
+            return der_cs2_num<idx_lep>(n*Y[idx_lep], T)[0]*Y[idx_lep];
+	}
+      } else {
+	return 0.;
+      }
+    }
+
+    template <int id_EOS>
+    double Ldsdn(double n, double T, double *Y) {
+      if (m_lep_active) {
+        if constexpr(id_EOS == 1) {
+            assert(m_lep_initialized);
+            return eval_lep_at_nty(ID_DSDN, n, T, Y[idx_lep]) * Y[idx_lep] / n - LepEntropy<1>(n, T, Y) / (n*n);
+        } else if constexpr(id_EOS == 2) {
+            return der_cs2_num<idx_lep>(n*Y[idx_lep], T)[1] * Y[idx_lep] / n - LepEntropy<2>(n, T, Y) / (n*n);
+	}
+      } else {
+	return 0.;
+      }
+    }
+    
+    template <int id_EOS>
+    double LdPdt(double n, double T, double *Y) {
+      if (m_lep_active) {
+        if constexpr(id_EOS == 1) {
+            assert(m_lep_initialized);
+            return eval_lep_at_nty(ID_DPDT, n, T, Y[idx_lep]);
+        } else if constexpr(id_EOS == 2) {
+            return der_cs2_num<idx_lep>(n*Y[idx_lep], T)[2];
+	}
+      } else {
+	return 0.;
+      }
+    }
+    
+    template <int id_EOS>
+    double Ldsdt(double n, double T, double *Y) {
+      if (m_lep_active) {
+        if constexpr(id_EOS == 1) {
+            assert(m_lep_initialized);
+            return eval_lep_at_nty(ID_DSDT, n, T, Y[idx_lep]) / n;
+        } else if constexpr(id_EOS == 2) {
+            return der_cs2_num<idx_lep>(n*Y[idx_lep], T)[3] / n;
+	}
+      } else {
+	return 0.;
+      }
+    }
+
+    /// Calculate the full leptonic EOS using.
+    std::array<double,NVARS> ComputeFullLepEOS(double n, double T, double *Y) {
+      assert(m_lep_initialized);
+      return eval_all_lep_at_lnt(log(n*Y[idx_lep]),log(T));
+    }
+
+  public:
+    /// Reads the table file.
+    void ReadLepTableFromFile(std::string fname) {
+      // Open input file
+      // -------------------------------------------------------------------------
+      ifstream EOSinput;
+      EOSinput.open(fname);
+
+      if (!EOSinput) {
+        cout << "Lepton EOS table not found!: id_lep = " << idx_lep << endl;
+        exit(EXIT_FAILURE);
+      }
+
+      // Get dataset sizes
+      // -------------------------------------------------------------------------
+      string EOSline;
+      getline(EOSinput, EOSline);
+      stringstream s1(EOSline);
+      s1 >> m_nl;
+
+      getline(EOSinput, EOSline);
+      stringstream s2(EOSline);
+      s2 >> m_ntl;
+
+      // Allocate memory
+      // -------------------------------------------------------------------------
+      m_log_nl   = new double[m_nl];
+      m_log_tl   = new double[m_ntl];
+      m_lep_table = new double[NTOT*m_nl*m_ntl];
+
+      double number;
+
+      // Read nb, t, yq
+      // -------------------------------------------------------------------------
+      getline(EOSinput, EOSline);
+      stringstream s3(EOSline);
+      for (int in = 0; in < m_nl; ++in) {
+        s3 >> number;
+        m_log_nl[in] = log(pow(10.,number));
+      }
+      m_id_log_nl = 1.0/(m_log_nl[1] - m_log_nl[0]);
+
+      getline(EOSinput, EOSline);
+      stringstream s4(EOSline);
+      for (int it = 0; it < m_ntl; ++it) {
+        s4 >> number;
+        m_log_tl[it] = log(pow(10.,number));
+      }
+      m_id_log_tl = 1.0/(m_log_tl[1] - m_log_tl[0]);
+
+
+      // Read other thermodynamics quantities
+      // -------------------------------------------------------------------------
+      for (int in = 0; in < m_nl; ++in) {
+        getline(EOSinput, EOSline);
+        stringstream s5(EOSline);
+          for (int it = 0; it < m_ntl; ++it) {
+            s5 >> number;
+            m_lep_table[lep_index(IL_N, in, it)] = log(number);
+      }}
+    
+      for (int in = 0; in < m_nl; ++in) {
+        getline(EOSinput, EOSline);
+        stringstream s5(EOSline);
+          for (int it = 0; it < m_ntl; ++it) {
+            s5 >> number;
+            m_lep_table[lep_index(IA_N, in, it)] = log(number);
+      }}
+    
+      for (int in = 0; in < m_nl; ++in) {
+        getline(EOSinput, EOSline);
+        stringstream s5(EOSline);
+          for (int it = 0; it < m_ntl; ++it) {
+            s5 >> number;
+            m_lep_table[lep_index(IL_P, in, it)] = log(number);
+      }}
+    
+      for (int in = 0; in < m_nl; ++in) {
+        getline(EOSinput, EOSline);
+        stringstream s5(EOSline);
+          for (int it = 0; it < m_ntl; ++it) {
+            s5 >> number;
+            m_lep_table[lep_index(IA_P, in, it)] = log(number);
+      }}
+
+
+      for (int in = 0; in < m_nl; ++in) {
+        getline(EOSinput, EOSline);
+        stringstream s5(EOSline);
+          for (int it = 0; it < m_ntl; ++it) {
+            s5 >> number;
+            m_lep_table[lep_index(IL_E, in, it)] = log(number);
+      }}
+    
+      for (int in = 0; in < m_nl; ++in) {
+        getline(EOSinput, EOSline);
+        stringstream s5(EOSline);
+          for (int it = 0; it < m_ntl; ++it) {
+            s5 >> number;
+            m_lep_table[lep_index(IA_E, in, it)] = log(number);
+      }}
+    
+      for (int in = 0; in < m_nl; ++in) {
+        getline(EOSinput, EOSline);
+        stringstream s5(EOSline);
+          for (int it = 0; it < m_ntl; ++it) {
+            s5 >> number;
+            m_lep_table[lep_index(IL_S, in, it)] = log(number);
+      }}
+    
+      for (int in = 0; in < m_nl; ++in) {
+        getline(EOSinput, EOSline);
+        stringstream s5(EOSline);
+          for (int it = 0; it < m_ntl; ++it) {
+            s5 >> number;
+            m_lep_table[lep_index(IA_S, in, it)] = log(number);
+      }}
+    
+      for (int in = 0; in < m_nl; ++in) {
+        getline(EOSinput, EOSline);
+        stringstream s5(EOSline);
+          for (int it = 0; it < m_ntl; ++it) {
+            s5 >> number;
+            m_lep_table[lep_index(IL_MU, in, it)] = number;
+      }}
+    
+      for (int in = 0; in < m_nl; ++in) {
+        getline(EOSinput, EOSline);
+        stringstream s5(EOSline);
+          for (int it = 0; it < m_ntl; ++it) {
+            s5 >> number;
+            m_lep_table[lep_index(ID_DPDN, in, it)] = number;
+      }}
+    
+      for (int in = 0; in < m_nl; ++in) {
+        getline(EOSinput, EOSline);
+        stringstream s5(EOSline);
+          for (int it = 0; it < m_ntl; ++it) {
+            s5 >> number;
+            m_lep_table[lep_index(ID_DSDN, in, it)] = number;
+      }}
+    
+      for (int in = 0; in < m_nl; ++in) {
+        getline(EOSinput, EOSline);
+        stringstream s5(EOSline);
+          for (int it = 0; it < m_ntl; ++it) {
+            s5 >> number;
+            m_lep_table[lep_index(ID_DPDT, in, it)] = number;
+      }}
+    
+      for (int in = 0; in < m_nl; ++in) {
+        getline(EOSinput, EOSline);
+        stringstream s5(EOSline);
+          for (int it = 0; it < m_ntl; ++it) {
+            s5 >> number;
+            m_lep_table[lep_index(ID_DSDT, in, it)] = number;
+      }}
+    
+      // Cleanup
+      // -------------------------------------------------------------------------
+      //delete[] s5;
+      EOSinput.close();
+    
+      m_lep_initialized = true;
+    }
+    
+    /// Get the raw number density
+    double const * GetRawLepLogNumberDensity() const {
+      return m_log_nl;
+    }
+
+    /// Get the raw table temperature
+    double const * GetRawLepLogTemperature() const {
+      return m_log_tl;
+    }
+
+    /// Get the raw table data
+    double const * GetLepTable() const {
+      return m_lep_table;
+    }
+
+    // Indexing used to access the lepton data
+    inline ptrdiff_t lep_index(int iv, int in, int it) const {
+      return it + m_ntl*(in + m_nl*iv);
+    }
+
+    /// Check if the EOS has been initialized properly.
+    inline bool IsLepInitialized() const {
+      return m_lep_initialized;
+    }
+
+    /// Check if the lepton species is active.
+    inline bool IsLepActive() const {
+      return m_lep_active;
+    }
+
+  private:
+    /// Low level evaluation function, not intended for outside use
+    double eval_lep_at_nty(int vi, double n, double T, double Yl) const {
+      return eval_lep_at_lnty(vi, log(n*Yl), log(T));
+    }
+    
+    /// Evaluate interpolation weight for lepton density
+    void weight_idx_lnl(double *w0, double *w1, int *in, double log_n) const {
+      *in = (log_n - m_log_nl[0])*m_id_log_nl;
+      *w1 = (log_n - m_log_nl[*in])*m_id_log_nl;
+      *w0 = 1.0 - (*w1);
+    }
+    
+    /// Evaluate interpolation weight for lepton temperature
+    void weight_idx_ltl(double *w0, double *w1, int *it, double log_t) const {
+      *it = (log_t - m_log_tl[0])*m_id_log_tl;
+      *w1 = (log_t - m_log_tl[*it])*m_id_log_tl;
+      *w0 = 1.0 - (*w1);
+    }
+    
+    /// Low level evaluation function, not intended for outside use
+    double eval_lep_at_lnty(int iv, double log_n, double log_t) const {
+      int in, it;
+      double wn0, wn1, wt0, wt1;
+    
+      weight_idx_lnl(&wn0, &wn1, &in, log_n);
+      weight_idx_ltl(&wt0, &wt1, &it, log_t);
+    
+      return
+        wn0 * (wt0 * m_lep_table[lep_index(iv, in+0, it+0)]   +
+               wt1 * m_lep_table[lep_index(iv, in+0, it+1)])  +
+        wn1 * (wt0 * m_lep_table[lep_index(iv, in+1, it+0)]   +
+               wt1 * m_lep_table[lep_index(iv, in+1, it+1)]);
+    }
+
+
+    /// Low level evaluation function for entire EOS, not intended for outside use
+    std::array<double,NVARS> eval_all_lep_at_lnt(double log_n, double log_t) const {
+      int in, it;
+      double wn0, wn1, wt0, wt1;
+      std::array<double,EOS_leptons::NVARS> eos_out;
+
+      weight_idx_lnl(&wn0, &wn1, &in, log_n);
+      weight_idx_ltl(&wt0, &wt1, &it, log_t);
+
+      for (int iv=0; iv<NVARS; iv++) {
+         eos_out[iv] = wn0 * (wt0 * m_lep_table[lep_index(iv, in+0, it+0)]   +
+                              wt1 * m_lep_table[lep_index(iv, in+0, it+1)])  +
+                       wn1 * (wt0 * m_lep_table[lep_index(iv, in+1, it+0)]   +
+                              wt1 * m_lep_table[lep_index(iv, in+1, it+1)]);
+      }
+      return eos_out;
+    }
+
+ 
+    double mu_check(const bool check, const double value) {
+      if (check) {
+        return value;
       } else {
         return 0.;
       }
     }
-    /// Calculate the sound speed derivatives using.
-    double EdPdn(double n, double T, double *Y);
-    double Edsdn(double n, double T, double *Y);
-    double EdPdt(double n, double T, double *Y);
-    double Edsdt(double n, double T, double *Y);
-
-    double MdPdn(double n, double T, double *Y);
-    double Mdsdn(double n, double T, double *Y);
-    double MdPdt(double n, double T, double *Y);
-    double Mdsdt(double n, double T, double *Y);
-    
-    /// Calculate the full leptonic EOS using.
-    std::array<double,NVARS> ComputeFullElectronEOS(double n, double T, double *Y);
-    std::array<double,NVARS> ComputeFullMuonEOS(double n, double T, double *Y);
-
-  public:
-    /// Reads the table file.
-    void ReadETableFromFile(std::string fname);
-    void ReadMTableFromFile(std::string fname);
-
-    /// Get the raw number density
-    double const * GetRawELogNumberDensity() const {
-      return m_log_ne;
-    }
-    double const * GetRawMLogNumberDensity() const {
-      return m_log_nm;
-    }
-
-    /// Get the raw table temperature
-    double const * GetRawELogTemperature() const {
-      return m_log_te;
-    }
-    double const * GetRawMLogTemperature() const {
-      return m_log_tm;
-    }
-
-    /// Get the raw table data
-    double const * GetElectronTable() const {
-      return m_el_table;
-    }
-
-    double const * GetMuonTable() const {
-      return m_mu_table;
-    }
-
-    // Indexing used to access the lepton data
-    inline ptrdiff_t el_index(int iv, int in, int it) const {
-      return it + m_nte*(in + m_ne*iv);
-    }
-    
-    inline ptrdiff_t mu_index(int iv, int in, int it) const {
-      return it + m_ntm*(in + m_nm*iv);
-    }
-
-
-    /// Check if the EOS has been initialized properly.
-    inline bool IsElectronInitialized() const {
-      return m_el_initialized;
-    }
-
-    inline bool IsMuonInitialized() const {
-      return m_mu_initialized;
-    }
-
-  private:
-    /// Low level evaluation function, not intended for outside use
-    double eval_el_at_nty(int vi, double n, double T, double Yl) const;
-    double eval_mu_at_nty(int vi, double n, double T, double Yl) const;
-    /// Low level evaluation function, not intended for outside use
-    double eval_el_at_lnty(int vi, double ln, double lT) const;
-    double eval_mu_at_lnty(int vi, double ln, double lT) const;
-
-    /// Evaluate interpolation weight for lepton density
-    void weight_idx_lne(double *w0, double *w1, int *in, double log_n) const;
-    void weight_idx_lnm(double *w0, double *w1, int *in, double log_n) const;
-    /// Evaluate interpolation weight for lepton temperature
-    void weight_idx_lte(double *w0, double *w1, int *it, double log_t) const;
-    void weight_idx_ltm(double *w0, double *w1, int *it, double log_t) const;
-
-    /// Low level evaluation function for entire EOS, not intended for outside use
-    std::array<double,NVARS> eval_all_el_at_lnt(double ln, double lT) const;
-    std::array<double,NVARS> eval_all_mu_at_lnt(double ln, double lT) const;
- 
-    double mu_check(const bool check, const double value);
-
-  private:
-    // Inverse of table spacing
-    double m_id_log_ne, m_id_log_te;
-    double m_id_log_nm, m_id_log_tm;
-
-    // Table storage, care should be made to store these data on the GPU later
-    double * m_log_ne;
-    double * m_log_te;
-    double * m_el_table;
-    
-    double * m_log_nm;
-    double * m_log_tm;
-    double * m_mu_table;
-    
-    const int id_e  = 0;
-    const int id_mu = 1;
-
-    bool m_el_initialized;
-    bool m_mu_initialized;
-
-    bool m_mu_active;
-  public:
-    // Table size
-    int m_ne, m_nte;
-    int m_nm, m_ntm;
-
 };
 
 

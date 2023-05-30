@@ -11,7 +11,7 @@
 
 constexpr int id_test = 2;
 
-class EOS_assembled : public EOS_baryons, public EOS_leptons {
+class EOS_assembled : public EOS_baryons, public EOS_leptons<0>, public EOS_leptons<1> {
     
     public:
     /// Constructor

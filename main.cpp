@@ -14,7 +14,7 @@
 
 using namespace std;
 
-const bool with_mu = false;
+const bool with_mu = true;
 
 void compute_EOS(EOS_assembled *eos, double nb, double T, double *Y) {
 	std::cout << "Input quantities: " << std::endl;
@@ -28,9 +28,8 @@ void compute_EOS(EOS_assembled *eos, double nb, double T, double *Y) {
 	const double d    = 1.e39*nb*mb*MeV/(c*c);
 	const double mu_n = eos->NeutronChemicalPotential(nb, T, Y);
 	const double mu_p = eos->ProtonChemicalPotential(nb, T, Y);
-	const double mu_e = eos->ElectronChemicalPotential<id_test>(nb, T, Y);
-        double mu_m = 0.;
-	if (with_mu == true) mu_m = eos->MuonChemicalPotential<id_test>(nb, T, Y);
+	const double mu_e = eos->EOS_leptons<0>::LepChemicalPotential<id_test>(nb, T, Y);
+        const double mu_m = eos->EOS_leptons<1>::LepChemicalPotential<id_test>(nb, T, Y);
 
 	const double mu_nue = mu_p - mu_n + mu_e;
 	double mu_num = 0.;
@@ -123,12 +122,14 @@ int main() {
 	std::cout << std::endl;
 
 	eos.ReadBarTableFromFile("/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module/eos_table/baryons/DD2_bar.h5");
-	eos.ReadETableFromFile("/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module/eos_table/electrons/eos_electrons_primitive_new_cs2_num.txt");
-	if (with_mu == true) eos.ReadMTableFromFile("/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module/eos_table/muons/eos_muons_primitive_new.txt");
-	
+	eos.EOS_leptons<0>::ReadLepTableFromFile("/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module/eos_table/electrons/eos_electrons_primitive_new.txt");
+	eos.EOS_leptons<1>::ReadLepTableFromFile("/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module/eos_table/muons/eos_muons_primitive_new.txt");
+	eos.EOS_leptons<0>::m_lep_active = true;
+	if (with_mu == true) eos.EOS_leptons<1>::m_lep_active = true;
+
 	double nb = 1.20226528E+34*1.e-39;    // fm-3
-        double T  = 6.30957362E+00;  //1.31825639E+02;     // MeV
-        double Y[2] = {7.00000003E-02,0.00}; //{5.79999983E-01,0.00};  // #/baryons
+  double T  = 6.30957362E+00;  //1.31825639E+02;     // MeV
+  double Y[2] = {7.00000003E-02,0.01}; //{5.79999983E-01,0.00};  // #/baryons
 
 	compute_EOS(&eos, nb, T, Y);
 	

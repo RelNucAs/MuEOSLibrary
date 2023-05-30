@@ -21,9 +21,8 @@ std::array<double,28> compute_EOS(EOS_assembled* eos, double nb, double T, doubl
         const double d    = 1.e39*nb*mb*MeV/(c*c);
         const double mu_n = eos->NeutronChemicalPotential(nb, T, Y);
         const double mu_p = eos->ProtonChemicalPotential(nb, T, Y);
-        const double mu_e = eos->ElectronChemicalPotential<id_test>(nb, T, Y);
-        double mu_m = 0.;
-        if (with_mu == true) mu_m = eos->MuonChemicalPotential<id_test>(nb, T, Y);
+        const double mu_e = eos->EOS_leptons<0>::LepChemicalPotential<id_test>(nb, T, Y);
+        const double mu_m = eos->EOS_leptons<1>::LepChemicalPotential<id_test>(nb, T, Y);
 
         const double mu_nue = mu_p - mu_n + mu_e;
         double mu_num = 0.;
@@ -103,14 +102,15 @@ int main () {
         }
         std::cout << "#####################" << std::endl;
         std::cout << std::endl;
-        
+
 	/* Global EOS class */
 	EOS_assembled eos;
 
 	/* Read EOS tables (electron and muon tables are read just to initialize the class but they are not used) */
-        eos.ReadBarTableFromFile("/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module/eos_table/baryons/DD2_bar.h5");
-        eos.ReadETableFromFile("/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module/eos_table/electrons/eos_electrons_primitive_new.txt");
-        if (with_mu == true) eos.ReadMTableFromFile("/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module/eos_table/muons/eos_muons_primitive_new.txt");
+        eos.ReadBarTableFromFile("eos_table/baryons/DD2_bar.h5");
+        eos.EOS_leptons<0>::m_lep_active = true;
+	if (with_mu == true) eos.EOS_leptons<1>::m_lep_active = true;
+
 
 	/* Define name of output table */
 	std::string table_name;
@@ -121,7 +121,7 @@ int main () {
 	}
 
 	/* Output stream */
-	std::ofstream Iout("/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module/eos_table/global/"+table_name);
+	std::ofstream Iout("eos_table/global/"+table_name);
 	
 	/* Define table input paramters
 	

@@ -62,15 +62,15 @@ double EOS_assembled::TemperatureFromP(double n, double p, double *Y) {
 }
 
 double EOS_assembled::Energy(double n, double T, double *Y) {
-  return BarEnergy(n, T, Y) + LepEnergy<id_test>(n, T, Y) + RadEnergy(T);
+  return BarEnergy(n, T, Y) + EOS_leptons<0>::LepEnergy<id_test>(n, T, Y) + EOS_leptons<1>::LepEnergy<id_test>(n, T, Y) + RadEnergy(T);
 }
 
 double EOS_assembled::Pressure(double n, double T, double *Y) {
-  return BarPressure(n, T, Y) + LepPressure<id_test>(n, T, Y) + RadPressure(T);
+  return BarPressure(n, T, Y) + EOS_leptons<0>::LepPressure<id_test>(n, T, Y) + EOS_leptons<1>::LepPressure<id_test>(n, T, Y) + RadPressure(T);
 }
 
 double EOS_assembled::Entropy(double n, double T, double *Y) {
-  return BarEntropy(n, T, Y) + (LepEntropy<id_test>(n, T, Y) + RadEntropy(T)) / n;
+  return BarEntropy(n, T, Y) + (EOS_leptons<0>::LepEntropy<id_test>(n, T, Y) + EOS_leptons<1>::LepEntropy<id_test>(n, T, Y) + RadEntropy(T)) / n;
 }
 
 double EOS_assembled::Enthalpy(double n, double T, double *Y) {
@@ -81,10 +81,11 @@ double EOS_assembled::Enthalpy(double n, double T, double *Y) {
 
 double EOS_assembled::SoundSpeed(double n, double T, double *Y) {
 
-  double const dPdn = BardPdn(n, T, Y) + EdPdn(n, T, Y) + MdPdn(n, T, Y);
-  double const dsdn = Bardsdn(n, T, Y) + Edsdn(n, T, Y) + Mdsdn(n, T, Y) - (RadEntropy(T) / (n*n));
-  double const dPdt = BardPdT(n, T, Y) + EdPdt(n, T, Y) + MdPdt(n, T, Y) + RaddPdT(T);
-  double const dsdt = BardsdT(n, T, Y) + Edsdt(n, T, Y) + Mdsdt(n, T, Y) + (RaddsdT(T)/n);
+  double const dPdn = BardPdn(n, T, Y) + EOS_leptons<0>::LdPdn<id_test>(n, T, Y) + EOS_leptons<1>::LdPdn<id_test>(n, T, Y);
+  double const dsdn = Bardsdn(n, T, Y) + EOS_leptons<0>::Ldsdn<id_test>(n, T, Y) + EOS_leptons<1>::Ldsdn<id_test>(n, T, Y) - (RadEntropy(T) / (n*n));
+  double const dPdt = BardPdT(n, T, Y) + EOS_leptons<0>::LdPdt<id_test>(n, T, Y) + EOS_leptons<1>::LdPdt<id_test>(n, T, Y) +  RaddPdT(T);
+  double const dsdt = BardsdT(n, T, Y) + EOS_leptons<0>::Ldsdt<id_test>(n, T, Y) + EOS_leptons<1>::Ldsdt<id_test>(n, T, Y) + (RaddsdT(T)/n);
+
   double const cs2 = sqrt(std::max(1.e-6,(dPdn - dsdn/dsdt*dPdt) / Enthalpy(n, T, Y)));
   //if (cs2 >= 1.) cout << "cs2 > 1!" << endl;
   //cout << "dPdn = " << dPdn << "\t" << "dsdn = " << dsdn << "\t" << "dPdt = " << dPdt << "\t" << "dsdt = " << dsdt << endl << endl; 
@@ -106,7 +107,7 @@ double EOS_assembled::temperature_from_e(double var, double n, double *Y) { //co
                      wy1 * m_table[EOS_baryons::index(iv, in+0, iy+1, it)]) +
               wn1 * (wy0 * m_table[EOS_baryons::index(iv, in+1, iy+0, it)]  +
                      wy1 * m_table[EOS_baryons::index(iv, in+1, iy+1, it)])) +
-          EOS_leptons::LepEnergy<id_test>(n, exp(EOS_baryons::m_log_t[it]), Y) + RadEnergy(exp(EOS_baryons::m_log_t[it])));
+          EOS_leptons<0>::LepEnergy<id_test>(n, exp(EOS_baryons::m_log_t[it]), Y) + EOS_leptons<1>::LepEnergy<id_test>(n, exp(EOS_baryons::m_log_t[it]), Y) +  RadEnergy(exp(EOS_baryons::m_log_t[it])));
 
     return var - var_pt;
   };
@@ -158,7 +159,7 @@ double EOS_assembled::temperature_from_p(double var, double n, double *Y) { //co
                                wy1 * EOS_baryons::m_table[EOS_baryons::index(iv, in+0, iy+1, it)])  +
                         wn1 * (wy0 * EOS_baryons::m_table[EOS_baryons::index(iv, in+1, iy+0, it)]   +
                                wy1 * EOS_baryons::m_table[EOS_baryons::index(iv, in+1, iy+1, it)])) -
-	            Pmin + EOS_leptons::LepPressure<id_test>(n, temp, Y) + RadPressure(temp);
+	            Pmin + EOS_leptons<0>::LepPressure<id_test>(n, temp, Y) + EOS_leptons<1>::LepPressure<id_test>(n, temp, Y) + RadPressure(temp);
     assert(var_pt > 0.);  
     return var - log(var_pt);
   };
