@@ -37,10 +37,10 @@ TESTS_SRC := $(wildcard $(TESTS_DIR)*.cpp)
 TESTS_OBJ := $(patsubst $(TESTS_DIR)%.cpp, $(COMPILE_DIR)%.o, $(TESTS_SRC))
 
 all: $(TMP_OBJECTS) main
-	ar rcs $(COMPILE_DIR)libout.a $(TMP_OBJECTS)
+	ar rcs $(COMPILE_DIR)libout.a $(OBJECTS)
 
 main: main.o $(OBJECTS)
-	$(CXX) $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) $(TMP_OBJECTS) main.o -o main $(H5_LIB) $(H5_FLAGS)
+	$(CXX) $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) $(OBJECTS) main.o -o main $(H5_LIB) $(H5_FLAGS)
 
 run: test_performance test_eos
 	$(COMPILE_DIR)test_eos_performance; $(COMPILE_DIR)test_eos
@@ -59,12 +59,6 @@ test_accuracy: $(OBJECTS) $(COMPILE_DIR)test_eos_accuracy.o
 
 test_baryons: $(OBJECTS) $(COMPILE_DIR)test_baryon_eos.o
 	$(CXX) $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) $(OBJECTS) $(COMPILE_DIR)test_baryon_eos.o -o $(COMPILE_DIR)test_baryon_eos $(H5_LIB) $(H5_FLAGS)
-
-generate_table: lep_table
-	$(TABLES_DIR)compile/generate_lep_table
-
-eta_table: $(OBJECTS) $(TABLES_DIR)compile/generate_eta_table.o
-	$(CXX) $(RFLAGS) $(INCLUDE) $(OBJECTS) $(TABLES_DIR)compile/generate_eta_table.o -o $(TABLES_DIR)compile/generate_eta_table
 
 lep_table: $(LEP_OBJ) $(TABLES_DIR)compile/generate_lep_table.o
 	$(CXX) $(RFLAGS) $(INCLUDE) $(LEP_OBJ) $(TABLES_DIR)compile/generate_lep_table.o -o $(TABLES_DIR)compile/generate_lep_table
@@ -93,6 +87,7 @@ $(TABLES_DIR)compile/%.o: $(TABLES_DIR)%.cpp
 clean:
 	rm -v -f $(COMPILE_DIR)src/*.o
 	rm -v -f $(TABLES_DIR)compile/*.o
+	rm -v -f $(TABLES_DIR)compile/generate_*
 	rm -v -f main.o
 	rm -v -f ./main
 #find $(COMPILE_DIR) -type f -exec rm -v -f {} +

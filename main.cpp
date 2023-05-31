@@ -128,8 +128,8 @@ int main() {
 	if (with_mu == true) eos.EOS_leptons<1>::m_lep_active = true;
 
 	double nb = 1.20226528E+34*1.e-39;    // fm-3
-  double T  = 6.30957362E+00;  //1.31825639E+02;     // MeV
-  double Y[2] = {7.00000003E-02,0.01}; //{5.79999983E-01,0.00};  // #/baryons
+	double T  = 6.30957362E+00;  //1.31825639E+02;     // MeV
+	double Y[2] = {7.00000003E-02,0.01}; //{5.79999983E-01,0.00};  // #/baryons
 
 	compute_EOS(&eos, nb, T, Y);
 	
