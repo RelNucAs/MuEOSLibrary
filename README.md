@@ -6,9 +6,7 @@ C++ class for implementation of general-purpose Equation of State of dense matte
               - nb : baryon number density<br>
               - T  : temperature<br>
               - Yq : charge fraction<br>
-  - leptons (electron and muons): either interpolation on precomputed 2D lepton table (1) or on-the-fly computation with Fermi integrals (2), as in Timmes EOS.<br>
-                                  This can be chosen by properly setting the template parameter "int id_test" at the beginning of "include/eos_assembled.hpp"<br>
-                                  Input parameters:<br>
+  - leptons (electron and muons): either interpolation on precomputed 2D lepton table (1) or on-the-fly computation with Fermi integrals (2), as in Timmes EOS.<br>                                    Input parameters:<br>
                                     - nl : lepton number density (nl = nb * Yl)<br>
                                     - T  : temperature<br>
   - photons: on-the-fly evaluation based on ideal photon gas EOS
