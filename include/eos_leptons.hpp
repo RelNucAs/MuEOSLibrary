@@ -46,6 +46,7 @@ class EOS_leptons {
     // Inverse of table spacing
     double m_id_log_nl, m_id_log_tl;
 
+  public:
     // Table storage, care should be made to store these data on the GPU later
     double * m_log_nl;
     double * m_log_tl;
@@ -54,7 +55,6 @@ class EOS_leptons {
     //const int idx_lep  = 0;
     //const int idx_lep = 1;
 
-  public:
     // Table size
     int m_nl, m_ntl;
 
@@ -435,6 +435,8 @@ class EOS_leptons {
   private:
     /// Low level evaluation function, not intended for outside use
     double eval_lep_at_nty(int vi, double n, double T, double Yl) const {
+      // @FIXME
+      if (Yl == 0.) return 0.;
       return eval_lep_at_lnty(vi, log(n*Yl), log(T));
     }
     

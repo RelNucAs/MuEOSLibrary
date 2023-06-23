@@ -184,9 +184,9 @@ int main () {
 
 	double nb, T;
 	double yq, ye, ym;
-	double Y[2];
+	double Y[2] = {0.0};
 	
-	Y[1] = 0.0; // set muon fraction equal to zero in case muons are not included
+	//Y[1] = 0.0; // set muon fraction equal to zero in case muons are not included
 
 	/* Choose step size for iteration over input variable arrays */
 	const int di = 10, dj = 10, dk = 10, dl = 10; //di: nb step, dj: T step, dk: yq step, dl: ym step

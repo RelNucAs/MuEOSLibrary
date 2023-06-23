@@ -9,8 +9,8 @@
 #include <stdlib.h>
 #include <iomanip>
 
-#include "eos_neutrinos.hpp"
-#include "eos_assembled.hpp"
+#include <eos_neutrinos.hpp>
+#include <eos_assembled.hpp>
 
 using namespace std;
 
@@ -28,8 +28,8 @@ void compute_EOS(EOS_assembled *eos, double nb, double T, double *Y) {
 	const double d    = 1.e39*nb*mb*MeV/(c*c);
 	const double mu_n = eos->NeutronChemicalPotential(nb, T, Y);
 	const double mu_p = eos->ProtonChemicalPotential(nb, T, Y);
-	const double mu_e = eos->EOS_leptons<0>::LepChemicalPotential<id_test>(nb, T, Y);
-        const double mu_m = eos->EOS_leptons<1>::LepChemicalPotential<id_test>(nb, T, Y);
+	const double mu_e = eos->EOS_leptons<0>::LepChemicalPotential<2>(nb, T, Y);
+        const double mu_m = eos->EOS_leptons<1>::LepChemicalPotential<2>(nb, T, Y);
 
 	const double mu_nue = mu_p - mu_n + mu_e;
 	double mu_num = 0.;

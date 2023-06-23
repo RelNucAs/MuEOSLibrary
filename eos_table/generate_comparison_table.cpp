@@ -21,8 +21,8 @@ std::array<double,21> compute_EOS(EOS_assembled* eos, double nb, double T, doubl
         const double d    = 1.e39*nb*mb*MeV/(c*c);
         const double mu_n = eos->NeutronChemicalPotential(nb, T, Y);
         const double mu_p = eos->ProtonChemicalPotential(nb, T, Y);
-        const double mu_e = eos->EOS_leptons<0>::LepChemicalPotential<id_test>(nb, T, Y);
-        const double mu_m = 0.; //eos->EOS_leptons<1>LepChemicalPotential<id_test>(nb, T, Y);
+        const double mu_e = eos->EOS_leptons<0>::LepChemicalPotential<2>(nb, T, Y);
+        const double mu_m = 0.; //eos->EOS_leptons<1>LepChemicalPotential<2>(nb, T, Y);
 
         const double mu_nue = mu_p - mu_n + mu_e;
         const double mu_num = 0.;

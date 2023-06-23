@@ -4,7 +4,7 @@
 #include <iostream>
 
 #include "find_eta.hpp"
-#include "interp.hpp"
+//#include "interp.hpp"
 #include "constants.hpp"
 #include "complete_FG.hpp"
 
@@ -92,8 +92,8 @@ std::array<double,9> eos_ferm_fromNR(const double nLep, const double temp) {
         return eos_array;
 }
 
-template<int eos_method, int species>
-std::array<double,9> eos_ferm_array(const double nLep, const double temp, struct EOSeta &eta_table, struct EOScomplete &EOS_table) {
+//template<int eos_method, int species>
+//std::array<double,9> eos_ferm_array(const double nLep, const double temp, struct EOSeta &eta_table, struct EOScomplete &EOS_table) {
 	//!........................INPUT........................................................
 //!...... matter density rho [g/cm^3]; net particle fraction y_tilde; temperature T [MeV];
 //!.......species 1 for electrons, 2 for muons; interval for non relat. degen. parameter [eta1,eta2]
@@ -116,27 +116,27 @@ std::array<double,9> eos_ferm_array(const double nLep, const double temp, struct
         //bool guess_from_interp = false;
 
 
-        if constexpr(eos_method == 3) {
-                std::array<double,13> tmp = eos_interp(nLep, temp, EOS_table);
-                tmp[8] = (tmp[8] - mL[species]) / temp;
-		std::array<double,9> eos_array;
-		for (int i=0;i<9;i++) eos_array[i] = tmp[i];
-                return eos_array;
-        } else if constexpr(eos_method == 1) {
-                double guess = find_guess_eta<species>(1.e39*nLep, temp);
-		std::cout << 1.e39*nLep << std::endl;
-		double eta = rtsafe<species>(1.e39*nLep, temp, guess);
-                return eos_ferm_onthefly(eta, temp, species);
-                //return eos_ferm_fromNR<species>(nLep, t);
-        } else if constexpr(eos_method == 2) {
-                double eta = eos_tintep(nLep, temp, eta_table.nL, eta_table.t, eta_table.eta);
-                //if (guess_from_interp == true) {
-                //      guess = eta;
-                //      eta = rtsafe(1.e39*nLep, T, mLep, guess, eta1_Lep, eta2_Lep);i
-                //}
-                return eos_ferm_onthefly(eta, temp, species);
-        }
-}
+//       if constexpr(eos_method == 3) {
+//                std::array<double,13> tmp = eos_interp(nLep, temp, EOS_table);
+//                tmp[8] = (tmp[8] - mL[species]) / temp;
+//		std::array<double,9> eos_array;
+//		for (int i=0;i<9;i++) eos_array[i] = tmp[i];
+//                return eos_array;
+//        } else if constexpr(eos_method == 1) {
+//                double guess = find_guess_eta<species>(1.e39*nLep, temp);
+//		std::cout << 1.e39*nLep << std::endl;
+//		double eta = rtsafe<species>(1.e39*nLep, temp, guess);
+//                return eos_ferm_onthefly(eta, temp, species);
+//                //return eos_ferm_fromNR<species>(nLep, t);
+//        } else if constexpr(eos_method == 2) {
+//                double eta = eos_tintep(nLep, temp, eta_table.nL, eta_table.t, eta_table.eta);
+//                //if (guess_from_interp == true) {
+//                //      guess = eta;
+//                //      eta = rtsafe(1.e39*nLep, T, mLep, guess, eta1_Lep, eta2_Lep);i
+//                //}
+//                return eos_ferm_onthefly(eta, temp, species);
+//        }
+//}
 
 
 template<int species>

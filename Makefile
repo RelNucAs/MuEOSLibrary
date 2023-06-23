@@ -1,4 +1,4 @@
-CXX      := g++
+CXX      := g++ 
 RFLAGS   := -std=c++17 -O3 -g -Wall -lm #-Wpedantic
 H5_LIB     := -L/usr/lib/x86_64-linux-gnu/hdf5/serial
 H5_INCLUDE := -I/usr/include/hdf5/serial
@@ -24,8 +24,8 @@ TABLES_DIR := $(CURDIR)/eos_table/
 SOURCES := $(wildcard $(SRC_DIR)*.cpp)
 OBJECTS := $(patsubst $(SRC_DIR)%.cpp, $(COMPILE_DIR)src/%.o, $(SOURCES)) 
 
-TMP_SOURCES = $(filter-out %eos_fermions.cpp,$(SOURCES))
-TMP_OBJECTS = $(filter-out %eos_fermions.o,$(OBJECTS))
+TMP_SOURCES = $(filter-out %eos_assembled.cpp,$(SOURCES))
+TMP_OBJECTS = $(filter-out %eos_assembled.o,$(OBJECTS))
 
 TABLES_SRC := $(wildcard $(TABLES_DIR)*.cpp) 
 TABLES_OBJ := $(patsubst $(TABLES_DIR)%.cpp, $(TABLES_DIR)compile/%.o, $(TABLES_SRC))
@@ -36,10 +36,10 @@ LEP_OBJ := $(patsubst $(SRC_DIR)%.cpp, $(COMPILE_DIR)src/%.o, $(LEP_SRC))
 TESTS_SRC := $(wildcard $(TESTS_DIR)*.cpp)
 TESTS_OBJ := $(patsubst $(TESTS_DIR)%.cpp, $(COMPILE_DIR)%.o, $(TESTS_SRC))
 
-all: $(TMP_OBJECTS) main
+all: $(TMP_OBJECTS) eos_assembled_interp main
 	ar rcs $(COMPILE_DIR)libout.a $(OBJECTS)
 
-main: main.o $(OBJECTS)
+main: main.o $(TMP_OBJECTS) eos_assembled_interp
 	$(CXX) $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) $(OBJECTS) main.o -o main $(H5_LIB) $(H5_FLAGS)
 
 run: test_performance test_eos
@@ -66,14 +66,21 @@ lep_table: $(LEP_OBJ) $(TABLES_DIR)compile/generate_lep_table.o
 global_table: $(OBJECTS) $(TABLES_DIR)compile/generate_global_table.o
 	$(CXX) $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) $(OBJECTS) $(TABLES_DIR)compile/generate_global_table.o -o $(TABLES_DIR)compile/generate_global_table $(H5_LIB) $(H5_FLAGS)
 
-comparison_table: $(OBJECTS) $(TABLES_DIR)compile/generate_comparison_table.o
-	$(CXX) $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) $(OBJECTS) $(TABLES_DIR)compile/generate_comparison_table.o -o $(TABLES_DIR)compile/generate_comparison_table $(H5_LIB) $(H5_FLAGS)
+comparison_table: $(TMP_OBJECTS) eos_assembled_otf $(TABLES_DIR)compile/generate_comparison_table.o $(TABLES_DIR)compile/compare_w_mu_ele.o 
+	$(CXX) -Did_test=1 $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) $(OBJECTS) $(TABLES_DIR)compile/generate_comparison_table.o -o $(TABLES_DIR)compile/generate_comparison_table $(H5_LIB) $(H5_FLAGS)
+	$(CXX) -Did_test=1 $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) $(OBJECTS) $(TABLES_DIR)compile/compare_w_mu_ele.o -o $(TABLES_DIR)compile/compare_w_mu_ele $(H5_LIB) $(H5_FLAGS)
 
 $(COMPILE_DIR)%.o: $(TESTS_DIR)%.cpp
 	$(CXX) $(RFLAGS) $(INCLUDE) -c -o $@ $<
 
 $(COMPILE_DIR)src/%.o: $(SRC_DIR)%.cpp
 	$(CXX) $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) -c -o $@ $< $(CPPFLAGS) $(H5_LIB) $(H5_FLAGS)
+
+eos_assembled_interp: $(SRC_DIR)eos_assembled.cpp
+	$(CXX) -Did_test=1 $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) -c -o $(COMPILE_DIR)src/eos_assembled.o $< $(CPPFLAGS) $(H5_LIB) $(H5_FLAGS)
+
+eos_assembled_otf: $(SRC_DIR)eos_assembled.cpp
+	$(CXX) -Did_test=2 $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) -c -o $(COMPILE_DIR)src/eos_assembled.o $< $(CPPFLAGS) $(H5_LIB) $(H5_FLAGS)
 
 main.o: main.cpp
 	$(CXX) $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) -c -o $@ $< $(CPPFLAGS) $(H5_LIB) $(H5_FLAGS)

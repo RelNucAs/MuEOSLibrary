@@ -6,12 +6,11 @@
 #include <cstddef>
 #include <string>
 
+#include <eos_photons.hpp>
 #include <eos_leptons.hpp>
 #include <eos_baryons.hpp>
 
-constexpr int id_test = 2;
-
-class EOS_assembled : public EOS_baryons, public EOS_leptons<0>, public EOS_leptons<1> {
+class EOS_assembled : public EOS_baryons, public EOS_leptons<0>, public EOS_leptons<1>, public EOS_photons {
     
     public:
     /// Constructor
@@ -19,12 +18,6 @@ class EOS_assembled : public EOS_baryons, public EOS_leptons<0>, public EOS_lept
 
     /// Destructor
     //~EOS_assembled();
-
-    /// Temperature from energy density
-    double TemperatureFromE(double n, double e, double *Y);
-
-    /// Temperature from pressure
-    double TemperatureFromP(double n, double p, double *Y);
 
     /// Calculate the energy density using.
     double Energy(double n, double T, double *Y);
@@ -41,10 +34,11 @@ class EOS_assembled : public EOS_baryons, public EOS_leptons<0>, public EOS_lept
     /// Calculate the sound speed.
     double SoundSpeed(double n, double T, double *Y);
 
-    public:
-    /// Low level function, not intended for outside use
-    double temperature_from_e(double var, double n, double *Y); //const;
-    double temperature_from_p(double var, double n, double *Y); //const;
+    /// Read in tables
+    void ReadTables(std::string BarTableName,
+                    std::string ETableName,
+                    std::string MTableName);
+
 };
 
 #endif

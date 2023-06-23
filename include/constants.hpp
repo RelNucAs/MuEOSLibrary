@@ -27,7 +27,7 @@ namespace constants
 	
 	// Atomic mass unit
 	const double mb = 1.674e-24; // g
-        const double mu = 1.66054e-24; //g
+    const double mu = 1.66054e-24; //g
 	
 	// Physical constants
 	const double h_bar = 6.582*(10e-22); // MeV*s
@@ -36,7 +36,7 @@ namespace constants
 	const double h = 1.23984193e-10/c;
  	const double GF = 8.957e-44; // MeV*cm^3
 	const double pi = acos((double) -1.);
-        const double kB = 8.617333262145e-11; // MeV/K
+    const double kB = 8.617333262145e-11; // MeV/K
 
 	// Coupling constants
 	const double gA = 1.23;
@@ -44,10 +44,10 @@ namespace constants
 	const double gS = 0.;
 	const double sinsqthetaw = 0.2325;
 
-        // Neutral current nucleon form factors (Q^2=0)
-        const double hnv = -0.5;
-        const double hna = -0.5*gA;
-        const double hpv =  0.5-2.*sinsqthetaw;
-        const double hpa =  0.5*gA;
+    // Neutral current nucleon form factors (Q^2=0)
+    const double hnv = -0.5;
+    const double hna = -0.5*gA;
+    const double hpv =  0.5-2.*sinsqthetaw;
+    const double hpa =  0.5*gA;
 
 }
