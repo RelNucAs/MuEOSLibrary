@@ -31,7 +31,8 @@ namespace parameters
 	const struct eos_table_dim SR_tab = {700 ,  750, 150};
 	const struct eos_table_dim HR_tab = {1400, 1500, 300};
 	
-	const std::string abs_path = "/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module/"; //to be moved somewhere else
+	const std::string abs_path = "/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module_test/EOS_module/";
+		//"/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module/"; //to be moved somewhere else
 }
 
 #endif

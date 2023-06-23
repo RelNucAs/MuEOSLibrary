@@ -63,12 +63,12 @@ test_baryons: $(OBJECTS) $(COMPILE_DIR)test_baryon_eos.o
 lep_table: $(LEP_OBJ) $(TABLES_DIR)compile/generate_lep_table.o
 	$(CXX) $(RFLAGS) $(INCLUDE) $(LEP_OBJ) $(TABLES_DIR)compile/generate_lep_table.o -o $(TABLES_DIR)compile/generate_lep_table
 
-global_table: $(OBJECTS) $(TABLES_DIR)compile/generate_global_table.o
-	$(CXX) $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) $(OBJECTS) $(TABLES_DIR)compile/generate_global_table.o -o $(TABLES_DIR)compile/generate_global_table $(H5_LIB) $(H5_FLAGS)
+global_table: $(TMP_OBJECTS) eos_assembled_otf $(TABLES_DIR)compile/generate_global_table.o
+	$(CXX) -Did_test=2 $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) $(OBJECTS) $(TABLES_DIR)compile/generate_global_table.o -o $(TABLES_DIR)compile/generate_global_table $(H5_LIB) $(H5_FLAGS)
 
 comparison_table: $(TMP_OBJECTS) eos_assembled_otf $(TABLES_DIR)compile/generate_comparison_table.o $(TABLES_DIR)compile/compare_w_mu_ele.o 
-	$(CXX) -Did_test=1 $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) $(OBJECTS) $(TABLES_DIR)compile/generate_comparison_table.o -o $(TABLES_DIR)compile/generate_comparison_table $(H5_LIB) $(H5_FLAGS)
-	$(CXX) -Did_test=1 $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) $(OBJECTS) $(TABLES_DIR)compile/compare_w_mu_ele.o -o $(TABLES_DIR)compile/compare_w_mu_ele $(H5_LIB) $(H5_FLAGS)
+	$(CXX) -Did_test=2 $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) $(OBJECTS) $(TABLES_DIR)compile/generate_comparison_table.o -o $(TABLES_DIR)compile/generate_comparison_table $(H5_LIB) $(H5_FLAGS)
+	$(CXX) -Did_test=2 $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) $(OBJECTS) $(TABLES_DIR)compile/compare_w_mu_ele.o -o $(TABLES_DIR)compile/compare_w_mu_ele $(H5_LIB) $(H5_FLAGS)
 
 $(COMPILE_DIR)%.o: $(TESTS_DIR)%.cpp
 	$(CXX) $(RFLAGS) $(INCLUDE) -c -o $@ $<
@@ -89,7 +89,7 @@ $(TESTS_DIR)compile/%.o: $(TESTS_DIR)%.cpp
 	$(CXX) $(RFLAGS) $(INCLUDE) -c -o $@ $<
 
 $(TABLES_DIR)compile/%.o: $(TABLES_DIR)%.cpp
-	$(CXX) $(RFLAGS) $(INCLUDE) -c -o $@ $<
+	$(CXX) -Did_test=2 $(RFLAGS) $(INCLUDE) -c -o $@ $<
 
 clean:
 	rm -v -f $(COMPILE_DIR)src/*.o

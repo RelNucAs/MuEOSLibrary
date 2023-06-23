@@ -10,7 +10,7 @@
 using namespace parameters;
 
 /* Boolean variable for including of muons */
-const bool with_mu = false; // true
+const bool with_mu = true; // false
 
 /* Function computing the EOS output */
 std::array<double,29> compute_EOS(EOS_assembled* eos, double nb, double T, double *Y) {
@@ -116,7 +116,7 @@ int main () {
 	/* Global EOS class */
 	EOS_assembled eos;
 
-	/* Read EOS tables (electron and muon tables are read just to initialize the class but they are not used) */
+	/* Read baryon table and initialize global EOS */
         eos.ReadBarTableFromFile("eos_table/baryons/DD2_bar.h5");
         eos.EOS_leptons<0>::m_lep_active = true;
 	if (with_mu == true) eos.EOS_leptons<1>::m_lep_active = true;
@@ -141,7 +141,7 @@ int main () {
 	- yq: charge fraction [#/baryon]
 	- ym: muon fraction [#/baryon]
 
-	where ye = yq - ym (charge neutrality), we discard negative values of the electron fraction ye
+	where ye = yq - ym (charge neutrality), in the loop below we discard negative values of the electron fraction ye
 
 	*/
 
@@ -186,8 +186,6 @@ int main () {
 	double yq, ye, ym;
 	double Y[2] = {0.0};
 	
-	//Y[1] = 0.0; // set muon fraction equal to zero in case muons are not included
-
 	/* Choose step size for iteration over input variable arrays */
 	const int di = 10, dj = 10, dk = 10, dl = 10; //di: nb step, dj: T step, dk: yq step, dl: ym step
 
