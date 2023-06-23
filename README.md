@@ -34,7 +34,7 @@ The input parameters are:
   If muon contribution is active:
   - Ym : muon fraction (in this case Ye = Yq-Ym by charge neutrality, please note that if Ye < 0 the EOS is not computed and the code jumps to the following iterartion)
 
-The input nb, T, Yq arrays are directly from the baryonic EOS table, in order to avoid to interpolate it. The first two arrays are uniformly spaced in log space, while the third one is uniform in lin space.
+The input nb, T, Yq arrays are directly from the baryonic EOS table, in order to avoid to introduce uncertainties associated with the interpolation of the baryonic table. The first two arrays are uniformly spaced in log space, while the third one is uniform in lin space.
 The input Ym array is uniformly log-spaced and can be adjusted by the user by acting on the boundaries, "ymmin" and "ymmax", and on the number of points, "n_ym".
 
 If necessary, the user can generate a coarser table by incrementing the variables controlling the step size of the loop over the input arrays ("di" for "n_array", "dj" for "t_array", "dk" for "yq_array" and "dl" for ym_array"). 
