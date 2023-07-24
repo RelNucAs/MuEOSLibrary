@@ -9,104 +9,13 @@
 #include <stdlib.h>
 #include <iomanip>
 
-#include <eos_neutrinos.hpp>
-#include <eos_assembled.hpp>
+#include "src/eos_species/eos_assembled.hpp"
 
 using namespace std;
 
-const bool with_mu = true;
-
-void compute_EOS(EOS_assembled *eos, double nb, double T, double *Y) {
-	std::cout << "Input quantities: " << std::endl;
-	std::cout << "nb = " << nb << " " << "1/fm-3" << std::endl;
-	std::cout << "T  = " << T << " " << "MeV" << std::endl;
-	std::cout << "Ye = " << Y[0] << " " << "#/baryons" << std::endl;
-	std::cout << "Ym = " << Y[1] << " " << "#/baryons" << std::endl;
-	std::cout << std::endl;
-
-	const double mb   = eos->GetBaryonMass();
-	const double d    = 1.e39*nb*mb*MeV/(c*c);
-	const double mu_n = eos->NeutronChemicalPotential(nb, T, Y);
-	const double mu_p = eos->ProtonChemicalPotential(nb, T, Y);
-	const double mu_e = eos->EOS_leptons<0>::LepChemicalPotential<2>(nb, T, Y);
-        const double mu_m = eos->EOS_leptons<1>::LepChemicalPotential<2>(nb, T, Y);
-
-	const double mu_nue = mu_p - mu_n + mu_e;
-	double mu_num = 0.;
-	if (with_mu == true) mu_num = mu_p - mu_n + mu_m;
-	
-	const double e = MeV*1.e39*(eos->Energy(nb, T, Y) - mb*nb); // + 1.e39*8.265e18*mb/(c*c)*MeV*nb; //erg/cm3
-	const double p = MeV*1.e39*eos->Pressure(nb, T, Y);
-	const double s = eos->Entropy(nb, T, Y);
-
-	const double ye = Y[0];
-	const double ym = Y[1];
-
-	const double ya = eos->AlphaFraction(nb, T, Y);
-	const double yh = eos->HeavyFraction(nb, T, Y);
-	const double yn = eos->NeutronFraction(nb, T, Y);
-	const double yp = eos->ProtonFraction(nb, T, Y);
-
-	const double ynue  = nu_fraction(nb, T, mu_nue/T);
-	const double yanue = anu_fraction(nb, T, mu_nue/T);
-	const double ynum  = nu_fraction(nb, T, mu_num/T);
-	const double yanum = anu_fraction(nb, T, mu_num/T);
-	const double ynux  = nu_fraction(nb, T, 0.);
-	
-	const double yle = ye + ynue - yanue;
-	const double ylm = ym + ynum - yanum;
-
-	const double znue  = nu_energy(nb, T, mu_nue/T);
-	const double zanue = anu_energy(nb, T, mu_nue/T);
-	const double znum  = nu_energy(nb, T, mu_num/T);
-	const double zanum = anu_energy(nb, T, mu_num/T);
-	const double znux  = nu_energy(nb, T, 0.);
-	
-	const double snue  = nu_entropy(nb, T, mu_nue/T);
-	const double sanue = anu_entropy(nb, T, mu_nue/T);
-	const double snum  = nu_entropy(nb, T, mu_num/T);
-	const double sanum = anu_entropy(nb, T, mu_num/T);
-	const double snux  = nu_energy(nb, T, 0.);
-	
-	const double u = e + 1.e39*nb * MeV * (znue + zanue + znum + zanum + 2. * znux);
-	const double ptot = p + 1.e39*nb * MeV * (znue + zanue + znum + zanum + 2. * znux) / 3.;
-	const double stot = s + (snue + sanue + snum + sanum + 2. * snux);
-
-	std::cout << "Output quantities: " << std::endl;
-	std::cout << "d            = " << d         << " " << "g/cm3"      << std::endl;	
-	std::cout << "yle          = " << yle       << " " << "#/baryon"   << std::endl;	
-	std::cout << "ylm          = " << ylm       << " " << "#/baryon"   << std::endl;	
-	std::cout << "u            = " << u         << " " << "erg/cm3"    << std::endl;	
-	std::cout << "nb           = " << 1.e39*nb  << " " << "1/cm3"      << std::endl;	
-	std::cout << "T            = " << T         << " " << "MeV"        << std::endl;	
-	std::cout << "Ye           = " << ye        << " " << "#/baryon"   << std::endl;	
-	std::cout << "Ym           = " << ym        << " " << "#/baryon"   << std::endl;	
-	std::cout << "e            = " << e         << " " << "erg/cm3"    << std::endl;
-	std::cout << "P            = " << ptot      << " " << "erg/cm3"    << std::endl;
-	std::cout << "s            = " << stot      << " " << "#/baryon"   << std::endl;
-	std::cout << "Yh           = " << yh        << " " << "#/baryon"   << std::endl;
-	std::cout << "Ya           = " << ya        << " " << "#/baryon"   << std::endl;
-	std::cout << "Yp           = " << yp        << " " << "#/baryon"   << std::endl;
-	std::cout << "Yn           = " << yn        << " " << "#/baryon"   << std::endl;
-	std::cout << "Ynue         = " << ynue      << " " << "#/baryon"   << std::endl;
-	std::cout << "Yanue        = " << yanue     << " " << "#/baryon"   << std::endl;
-	std::cout << "Ynum         = " << ynum      << " " << "#/baryon"   << std::endl;
-	std::cout << "Yanum        = " << yanum     << " " << "#/baryon"   << std::endl;
-	std::cout << "Ynux         = " << ynux      << " " << "#/baryon"   << std::endl;
-	std::cout << "Znue         = " << znue      << " " << "MeV/baryon" << std::endl;
-	std::cout << "Zanue        = " << zanue     << " " << "MeV/baryon" << std::endl;
-	std::cout << "Znum         = " << znum      << " " << "MeV/baryon" << std::endl;
-	std::cout << "Zanum        = " << zanum     << " " << "MeV/baryon" << std::endl;
-	std::cout << "Znux         = " << znux      << " " << "MeV/baryon" << std::endl;
-	std::cout << "mup (wrt mn) = " << mu_p - mb << " " << "MeV"        << std::endl;
-	std::cout << "mun (wrt mn) = " << mu_n - mb << " " << "MeV"        << std::endl;
-	std::cout << "mue (w me)   = " << mu_e      << " " << "MeV"        << std::endl;
-	std::cout << "mum (w mm)   = " << mu_m      << " " << "MeV"        << std::endl;
-
-        return;
-}
-
 int main() {
+	const bool with_mu = true;
+
 	EOS_assembled eos;
 
 	std::cout << std::scientific;
@@ -127,11 +36,55 @@ int main() {
 	eos.EOS_leptons<0>::m_lep_active = true;
 	if (with_mu == true) eos.EOS_leptons<1>::m_lep_active = true;
 
+
 	double nb = 1.20226528E+34*1.e-39;    // fm-3
 	double T  = 6.30957362E+00;  //1.31825639E+02;     // MeV
 	double Y[2] = {7.00000003E-02,0.01}; //{5.79999983E-01,0.00};  // #/baryons
 
-	compute_EOS(&eos, nb, T, Y);
+	std::cout << "Input quantities: " << std::endl;
+	std::cout << "nb = " << nb << " " << "1/fm-3" << std::endl;
+	std::cout << "T  = " << T << " " << "MeV" << std::endl;
+	std::cout << "Ye = " << Y[0] << " " << "#/baryons" << std::endl;
+	std::cout << "Ym = " << Y[1] << " " << "#/baryons" << std::endl;
+	std::cout << std::endl;
+
+	FullEOSOutput out = eos.compute_full_EOS(nb, T, Y);
+
+	const double mb   = eos.GetBaryonMass();
+	const double etot = out.e + 1.0E+39 * nb * MeV * out.nuEOS.Z_tot;
+	const double ptot = out.P + 1.0E+39 * nb * MeV * out.nuEOS.Z_tot / 3.;
+	const double stot = out.s + out.nuEOS.s_tot;
+
+	std::cout << "Output quantities: " << std::endl;
+	std::cout << "d            = " << out.rho                << " " << "g/cm3"      << std::endl;	
+	std::cout << "yle          = " << out.Y_part.yle         << " " << "#/baryon"   << std::endl;	
+	std::cout << "ylm          = " << out.Y_part.ylm         << " " << "#/baryon"   << std::endl;	
+	std::cout << "u            = " << etot                   << " " << "erg/cm3"    << std::endl;	
+	std::cout << "nb           = " << 1.0E+39 * nb           << " " << "1/cm3"      << std::endl;	
+	std::cout << "T            = " << out.T                  << " " << "MeV"        << std::endl;	
+	std::cout << "Ye           = " << out.Y_part.ye          << " " << "#/baryon"   << std::endl;	
+	std::cout << "Ym           = " << out.Y_part.ym          << " " << "#/baryon"   << std::endl;	
+	std::cout << "e            = " << out.e                  << " " << "erg/cm3"    << std::endl;
+	std::cout << "P            = " << ptot                   << " " << "erg/cm3"    << std::endl;
+	std::cout << "s            = " << stot                   << " " << "#/baryon"   << std::endl;
+	std::cout << "Yh           = " << out.Y_part.yh          << " " << "#/baryon"   << std::endl;
+	std::cout << "Ya           = " << out.Y_part.ya          << " " << "#/baryon"   << std::endl;
+	std::cout << "Yp           = " << out.Y_part.yp          << " " << "#/baryon"   << std::endl;
+	std::cout << "Yn           = " << out.Y_part.yn          << " " << "#/baryon"   << std::endl;
+	std::cout << "Ynue         = " << out.Y_part.ynue        << " " << "#/baryon"   << std::endl;
+	std::cout << "Yanue        = " << out.Y_part.yanue       << " " << "#/baryon"   << std::endl;
+	std::cout << "Ynum         = " << out.Y_part.ynum        << " " << "#/baryon"   << std::endl;
+	std::cout << "Yanum        = " << out.Y_part.yanum       << " " << "#/baryon"   << std::endl;
+	std::cout << "Ynux         = " << out.Y_part.ynux        << " " << "#/baryon"   << std::endl;
+	std::cout << "Znue         = " << out.nuEOS.Z_nue        << " " << "MeV/baryon" << std::endl;
+	std::cout << "Zanue        = " << out.nuEOS.Z_anue       << " " << "MeV/baryon" << std::endl;
+	std::cout << "Znum         = " << out.nuEOS.Z_num        << " " << "MeV/baryon" << std::endl;
+	std::cout << "Zanum        = " << out.nuEOS.Z_anum       << " " << "MeV/baryon" << std::endl;
+	std::cout << "Znux         = " << out.nuEOS.Z_nux        << " " << "MeV/baryon" << std::endl;
+	std::cout << "mup (wrt mn) = " << out.chem_pot.mu_p - mb << " " << "MeV"        << std::endl;
+	std::cout << "mun (wrt mn) = " << out.chem_pot.mu_n - mb << " " << "MeV"        << std::endl;
+	std::cout << "mue (w me)   = " << out.chem_pot.mu_e      << " " << "MeV"        << std::endl;
+	std::cout << "mum (w mm)   = " << out.chem_pot.mu_m      << " " << "MeV"        << std::endl;
 	
 	return 0;
 }
