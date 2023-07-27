@@ -59,3 +59,10 @@ main
 
 # HDF5 tables
 *.h5
+
+# VS code
+.vscode/
+
+# Object and binary files from code compilation
+*/bin/*
+*/obj/*

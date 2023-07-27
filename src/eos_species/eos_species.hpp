@@ -40,7 +40,7 @@ class EOS_neutrinos {
 
 // file: eos_photons.cpp
 class EOS_photons {
-  protected:
+  public:
     //number density
     double RadNumberDensity(double T);
 
@@ -160,6 +160,7 @@ class EOS_baryons {
     }
 
   private:
+    // @TODO: add action for interpolation outside the table range
     /// Low level evaluation function, not intended for outside use
     double eval_at_nty(int vi, double n, double T, double Yq) const;
     /// Low level evaluation function, not intended for outside use

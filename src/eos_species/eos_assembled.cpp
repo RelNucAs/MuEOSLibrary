@@ -136,6 +136,7 @@ ParticleFractions EOS_assembled::NeutrinoFractions(double n, double T, double *Y
   return out;
 }
 
+// @TODO: add possibility to set a density threshold for neutrinos
 NeutrinoEOSOutput EOS_assembled::compute_neutrino_EOS(double n, double T, double *Y) {
   NeutrinoEOSOutput out;
   
@@ -179,16 +180,14 @@ FullEOSOutput EOS_assembled::compute_full_EOS(double n, double T, double *Y) {
   
   out.nb = n;  // Baryon number density [1/cm3]
   out.T  = T;  // Temperature [MeV]
-  
-  // @TODO: add baryon mass to EOS output
-  const double mb   = GetBaryonMass();
-
-  out.rho = 1.0E+39 * n * mb * MeV / (c*c); // Mass density [g/cm3]
+ 
+  out.mb  = GetBaryonMass();
+  out.rho = 1.0E+39 * n * out.mb * MeV / (c*c); // Mass density [g/cm3]
 
   out.chem_pot = GetChemicalPotentials(n, T, Y);
   out.Y_part   = GetParticleFractions(n, T, Y);
 
-  out.e = MeV * 1.0E+39 * (Energy(n, T, Y) - mb * n); // + 1.e39*8.265e18*mb/(c*c)*MeV*nb; //erg/cm3
+  out.e = MeV * 1.0E+39 * (Energy(n, T, Y) - out.mb * n); // + 1.e39*8.265e18*mb/(c*c)*MeV*nb; //erg/cm3
   out.P = MeV * 1.0E+39 * Pressure(n, T, Y);
   out.s = Entropy(n, T, Y);
 

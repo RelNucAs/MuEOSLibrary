@@ -58,6 +58,7 @@ struct FullEOSOutput {
   double rho;                // Mass density [g/cm3]
   double nb;                 // Baryon number density [1/cm3]
   double T;                  // Temperature [MeV]
+  double mb;                 // Baryon mass [MeV]
   double e;                  // Internal energy density [erg/cm3]
   double P;                  // Pressure [erg/cm3]
   double s;                  // Entropy per baryon [#/baryon]

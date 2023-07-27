@@ -457,7 +457,8 @@ class EOS_leptons {
       *w1 = (log_t - m_log_tl[*it])*m_id_log_tl;
       *w0 = 1.0 - (*w1);
     }
-    
+
+    // @TODO: add action for interpolation outside the table range
     /// Low level evaluation function, not intended for outside use
     double eval_lep_at_lnty(int iv, double log_n, double log_t) const {
       int in, it;
