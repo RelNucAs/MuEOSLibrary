@@ -84,7 +84,9 @@ double rtsafe(const double nLep, const double T, const double guess) {
                 xh=x1;
                 xl=x2;
         }
+
         double rts=guess; //0.5*(x1+x2);  //Initialize the guess for root,
+
         double dxold=fabs(x2-x1); //the “stepsize before last,”
         double dx=dxold;         //and the last step.
         double f=n_net_f(rts, T, mLep)-nLep;
@@ -103,6 +105,7 @@ double rtsafe(const double nLep, const double T, const double guess) {
                         if (temp == rts) return rts;
                 }
                 if (fabs(dx) < xacc) {
+        	        std::cout << std::endl;
 			//std::cout << std::endl << "Num steps: " << j << std::endl;
 			return rts; //Convergence criterion.
 		}
@@ -158,7 +161,8 @@ double rtsafe_mod(const double nLep, const double T, const double guess, struct 
                 xl=x2;
         }
         double rts=guess; //0.5*(x1+x2);  //Initialize the guess for root,
-        double dxold=fabs(x2-x1); //the “stepsize before last,”
+        std::cout << rts << std::endl;
+	double dxold=fabs(x2-x1); //the “stepsize before last,”
         double dx=dxold;         //and the last step.
         n_net_fdf(rts, T, mLep, FD);
         double f  = FD.n_net - nLep; //n_net_f(rts, T, mLep)-nLep;

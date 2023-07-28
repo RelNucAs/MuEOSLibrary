@@ -39,7 +39,7 @@ TESTS_OBJ := $(patsubst $(TESTS_DIR)%.cpp, $(COMPILE_DIR)%.o, $(TESTS_SRC))
 all: $(TMP_OBJECTS) eos_assembled_interp main
 	ar rcs $(COMPILE_DIR)libout.a $(OBJECTS)
 
-main: main.o $(TMP_OBJECTS) eos_assembled_interp
+main: main.o $(TMP_OBJECTS) eos_assembled_otf
 	$(CXX) $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) $(OBJECTS) main.o -o main $(H5_LIB) $(H5_FLAGS)
 
 run: test_performance test_eos
@@ -69,6 +69,9 @@ global_table: $(TMP_OBJECTS) eos_assembled_otf $(TABLES_DIR)compile/generate_glo
 comparison_table: $(TMP_OBJECTS) eos_assembled_otf $(TABLES_DIR)compile/generate_comparison_table.o $(TABLES_DIR)compile/compare_w_mu_ele.o 
 	$(CXX) -Did_test=2 $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) $(OBJECTS) $(TABLES_DIR)compile/generate_comparison_table.o -o $(TABLES_DIR)compile/generate_comparison_table $(H5_LIB) $(H5_FLAGS)
 	$(CXX) -Did_test=2 $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) $(OBJECTS) $(TABLES_DIR)compile/compare_w_mu_ele.o -o $(TABLES_DIR)compile/compare_w_mu_ele $(H5_LIB) $(H5_FLAGS)
+
+test_hist: $(TMP_OBJECTS) eos_assembled_otf $(TABLES_DIR)compile/test_hist.o 
+	$(CXX) -Did_test=2 $(RFLAGS) $(H5_INCLUDE) $(INCLUDE) $(OBJECTS) $(TABLES_DIR)compile/test_hist.o -o $(TABLES_DIR)compile/test_hist $(H5_LIB) $(H5_FLAGS)
 
 $(COMPILE_DIR)%.o: $(TESTS_DIR)%.cpp
 	$(CXX) $(RFLAGS) $(INCLUDE) -c -o $@ $<

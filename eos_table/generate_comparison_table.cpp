@@ -38,20 +38,20 @@ std::array<double,21> compute_EOS(EOS_assembled* eos, double nb, double T, doubl
         const double yn = eos->NeutronFraction(nb, T, Y);
         const double yp = eos->ProtonFraction(nb, T, Y);
 
-        const double ynue  = nu_fraction(nb, T, mu_nue/T);
-        const double yanue = anu_fraction(nb, T, mu_nue/T);
-        const double ynum  = nu_fraction(nb, T, mu_num/T);
-        const double yanum = anu_fraction(nb, T, mu_num/T);
-        const double ynux  = nu_fraction(nb, T, 0.);
+        const double ynue  = eos->nu_fraction(nb, T, mu_nue/T);
+        const double yanue = eos->anu_fraction(nb, T, mu_nue/T);
+        const double ynum  = eos->nu_fraction(nb, T, mu_num/T);
+        const double yanum = eos->anu_fraction(nb, T, mu_num/T);
+        const double ynux  = eos->nu_fraction(nb, T, 0.);
 
         const double yle = ye + ynue - yanue;
         const double ylm = ym + ynum - yanum;
 
-        const double znue  = nu_energy(nb, T, mu_nue/T);
-        const double zanue = anu_energy(nb, T, mu_nue/T);
-        const double znum  = nu_energy(nb, T, mu_num/T);
-        const double zanum = anu_energy(nb, T, mu_num/T);
-        const double znux  = nu_energy(nb, T, 0.);
+        const double znue  = eos->nu_energy(nb, T, mu_nue/T);
+        const double zanue = eos->anu_energy(nb, T, mu_nue/T);
+        const double znum  = eos->nu_energy(nb, T, mu_num/T);
+        const double zanum = eos->anu_energy(nb, T, mu_num/T);
+        const double znux  = eos->nu_energy(nb, T, 0.);
 
         const double u = e + 1.e39*nb * MeV * (znue + zanue + znum + zanum + 2. * znux);
         const double ptot = p + 1.e39*nb * MeV * (znue + zanue + znum + zanum + 2. * znux) / 3.;

@@ -9,7 +9,6 @@
 #include <stdlib.h>
 #include <iomanip>
 
-#include <eos_neutrinos.hpp>
 #include <eos_assembled.hpp>
 
 using namespace std;
@@ -26,15 +25,16 @@ void compute_EOS(EOS_assembled *eos, double nb, double T, double *Y) {
 
 	const double mb   = eos->GetBaryonMass();
 	const double d    = 1.e39*nb*mb*MeV/(c*c);
-	const double mu_n = eos->NeutronChemicalPotential(nb, T, Y);
-	const double mu_p = eos->ProtonChemicalPotential(nb, T, Y);
-	const double mu_e = eos->EOS_leptons<0>::LepChemicalPotential<2>(nb, T, Y);
-        const double mu_m = eos->EOS_leptons<1>::LepChemicalPotential<2>(nb, T, Y);
-
-	const double mu_nue = mu_p - mu_n + mu_e;
-	double mu_num = 0.;
-	if (with_mu == true) mu_num = mu_p - mu_n + mu_m;
 	
+	ChemPotentials chem_pot = eos->GetChemicalPotentials(nb, T, Y);
+
+	double mu_n = chem_pot.mu_n;
+	double mu_p = chem_pot.mu_p;
+	double mu_e = chem_pot.mu_e;
+	double mu_m = chem_pot.mu_m;
+	double mu_nue = chem_pot.mu_nue;
+	double mu_num = chem_pot.mu_num;
+
 	const double e = MeV*1.e39*(eos->Energy(nb, T, Y) - mb*nb); // + 1.e39*8.265e18*mb/(c*c)*MeV*nb; //erg/cm3
 	const double p = MeV*1.e39*eos->Pressure(nb, T, Y);
 	const double s = eos->Entropy(nb, T, Y);
@@ -42,31 +42,34 @@ void compute_EOS(EOS_assembled *eos, double nb, double T, double *Y) {
 	const double ye = Y[0];
 	const double ym = Y[1];
 
+    double ynu[5] = {0.0};
+    eos->NuParticleFractions(nb, T, Y, ynu);
+
 	const double ya = eos->AlphaFraction(nb, T, Y);
 	const double yh = eos->HeavyFraction(nb, T, Y);
 	const double yn = eos->NeutronFraction(nb, T, Y);
 	const double yp = eos->ProtonFraction(nb, T, Y);
 
-	const double ynue  = nu_fraction(nb, T, mu_nue/T);
-	const double yanue = anu_fraction(nb, T, mu_nue/T);
-	const double ynum  = nu_fraction(nb, T, mu_num/T);
-	const double yanum = anu_fraction(nb, T, mu_num/T);
-	const double ynux  = nu_fraction(nb, T, 0.);
+	double ynue  = ynu[0];
+	double yanue = ynu[1];
+	double ynum  = ynu[2];
+	double yanum = ynu[3];
+	double ynux  = ynu[4];
 	
 	const double yle = ye + ynue - yanue;
 	const double ylm = ym + ynum - yanum;
 
-	const double znue  = nu_energy(nb, T, mu_nue/T);
-	const double zanue = anu_energy(nb, T, mu_nue/T);
-	const double znum  = nu_energy(nb, T, mu_num/T);
-	const double zanum = anu_energy(nb, T, mu_num/T);
-	const double znux  = nu_energy(nb, T, 0.);
+	const double znue  = eos->nu_energy(nb, T, mu_nue/T);
+	const double zanue = eos->anu_energy(nb, T, mu_nue/T);
+	const double znum  = eos->nu_energy(nb, T, mu_num/T);
+	const double zanum = eos->anu_energy(nb, T, mu_num/T);
+	const double znux  = eos->nu_energy(nb, T, 0.);
 	
-	const double snue  = nu_entropy(nb, T, mu_nue/T);
-	const double sanue = anu_entropy(nb, T, mu_nue/T);
-	const double snum  = nu_entropy(nb, T, mu_num/T);
-	const double sanum = anu_entropy(nb, T, mu_num/T);
-	const double snux  = nu_energy(nb, T, 0.);
+	const double snue  = eos->nu_entropy(nb, T, mu_nue/T);
+	const double sanue = eos->anu_entropy(nb, T, mu_nue/T);
+	const double snum  = eos->nu_entropy(nb, T, mu_num/T);
+	const double sanum = eos->anu_entropy(nb, T, mu_num/T);
+	const double snux  = eos->nu_entropy(nb, T, 0.);
 	
 	const double u = e + 1.e39*nb * MeV * (znue + zanue + znum + zanum + 2. * znux);
 	const double ptot = p + 1.e39*nb * MeV * (znue + zanue + znum + zanum + 2. * znux) / 3.;

@@ -54,6 +54,77 @@ double EOS_assembled::SoundSpeed(double n, double T, double *Y) {
   return cs2;
 }
 
+ChemPotentials EOS_assembled::GetChemicalPotentials(double n, double T, double *Y) {
+  ChemPotentials out;
+  out.mu_n = NeutronChemicalPotential(n, T, Y);                                  // Neutron chemical potential [MeV]
+  out.mu_p = ProtonChemicalPotential(n, T, Y);                                   // Proton chemical potential [MeV]
+  out.mu_e = EOS_leptons<0>::LepChemicalPotential<id_test>(n, T, Y);             // Electron chemical potential [MeV]
+  out.mu_m = EOS_leptons<1>::LepChemicalPotential<id_test>(n, T, Y);             // Muon chemical potential [MeV]
+  if (EOS_leptons<0>::m_lep_active == true) {
+    out.mu_nue = out.mu_p - out.mu_n + out.mu_e; // Electron neutrino chemical potential [MeV]
+  } else {
+    out.mu_nue = 0.;
+  }
+  if (EOS_leptons<1>::m_lep_active == true) {
+    out.mu_num = out.mu_p - out.mu_n + out.mu_m; // Muon neutrino chemical potential [MeV]
+  } else {
+    out.mu_num = 0.;
+  }
+  return out;
+}
+
+void EOS_assembled::BaryonFractions(double n, double T, double *Y, double *out) {
+  out[0] = HeavyFraction(n, T, Y);   // Heavy nuclei fraction
+  out[1] = AlphaFraction(n, T, Y);   // Alpha fraction
+  out[2] = NeutronFraction(n, T, Y); // Neutron fracton
+  out[3] = ProtonFraction(n, T, Y);  // Proton fraction   
+  return;
+}
+
+void EOS_assembled::NuParticleFractions(double n, double T, double *Y, double *out) {
+  //double chem_pot[6] = {0.0};
+  ChemPotentials chem_pot = GetChemicalPotentials(n, T, Y);
+  
+  const double eta_nue = chem_pot.mu_nue / T; //mu_nue/T
+  const double eta_num = chem_pot.mu_num / T; //mu_num/T
+
+  out[0] = nu_fraction(n, T,  eta_nue);   //Y_nue
+  out[1] = anu_fraction(n, T, eta_nue);   //Y_anue
+  out[2] = nu_fraction(n, T, eta_num);    //Y_num
+  out[3] = anu_fraction(n, T, eta_num);   //Y_anum
+  out[4] = nu_fraction(n, T, 0.);         //Y_nux
+  return;
+}
+
+void EOS_assembled::NuEnergyFractions(double n, double T, double *Y, double *out) {
+  //double chem_pot[6] = {0.0};
+  ChemPotentials chem_pot = GetChemicalPotentials(n, T, Y);
+  
+  const double eta_nue = chem_pot.mu_nue / T; //mu_nue/T
+  const double eta_num = chem_pot.mu_num / T; //mu_num/T
+
+  out[0] = nu_energy(n, T,  eta_nue);   //Z_nue
+  out[1] = anu_energy(n, T, eta_nue);   //Z_anue
+  out[2] = nu_energy(n, T, eta_num);    //Z_num
+  out[3] = anu_energy(n, T, eta_num);   //Z_anum
+  out[4] = nu_energy(n, T, 0.);         //Z_nux
+  return;
+}
+
+void EOS_assembled::NuEntropies(double n, double T, double *Y, double *out) {
+  //double chem_pot[6] = {0.0};
+  ChemPotentials chem_pot = GetChemicalPotentials(n, T, Y);
+  
+  const double eta_nue = chem_pot.mu_nue / T; //mu_nue/T
+  const double eta_num = chem_pot.mu_num / T; //mu_num/T
+
+  out[0] = nu_entropy(n, T,  eta_nue);   //Z_nue
+  out[1] = anu_entropy(n, T, eta_nue);   //Z_anue
+  out[2] = nu_entropy(n, T, eta_num);    //Z_num
+  out[3] = anu_entropy(n, T, eta_num);   //Z_anum
+  out[4] = nu_entropy(n, T, 0.);         //Z_nux
+  return;
+}
 void EOS_assembled::ReadTables(std::string BarTableName,
                                std::string ETableName,
                                std::string MTableName) {
