@@ -29,8 +29,11 @@ OBJECTS := $(patsubst $(SRC_DIR)%.cpp, $(SRC_DIR)%.o, $(SRC_FILES))
  
 all: $(OBJ_FILES) main
 
-main: $(OBJ_FILES) eos_otf main.cpp
+main: $(OBJ_FILES) eos_otf main.o
 	$(CXX) $(RFLAGS) $(H5_INCLUDE) $(OBJ_FILES) $(OBJ_DIR)eos_assembled_otf main.o -o main $(H5_LIB) $(H5_FLAGS)
+
+main.o: main.cpp
+	$(CXX) $(RFLAGS) $(H5_INCLUDE) -c -o $@ $< $(H5_LIB) $(H5_FLAGS)
 
 $(OBJ_DIR)%.o: %.cpp
 	$(CXX) $(RFLAGS) $(H5_INCLUDE) -c -o $@ $< $(H5_LIB) $(H5_FLAGS)

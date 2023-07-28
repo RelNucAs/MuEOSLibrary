@@ -1,17 +1,6 @@
-#include <stdio.h>
-#include <math.h>
-#include <iostream> //Input&Output stream model based library
-#include <fstream>
-#include <sstream>
-#include <string>
-#include <vector>
-#include <time.h>
-#include <stdlib.h>
 #include <iomanip>
 
 #include "src/eos_species/eos_assembled.hpp"
-
-using namespace std;
 
 int main() {
   const bool with_mu = true;
@@ -19,8 +8,8 @@ int main() {
   /* Global EOS class */
   EOS_assembled eos;
 
-  std::cout << std::scientific;
-
+  /* Print header */
+  std::cout << std::endl;
   std::cout << "#####################" << std::endl;
   if (with_mu == true) {
     std::cout << "#   EOS with muons  #" << std::endl;
@@ -32,29 +21,33 @@ int main() {
   std::cout << std::endl;
 
   // @TODO: change path
-  eos.ReadBarTableFromFile("/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module/eos_table/baryons/DD2_bar.h5");
-  eos.EOS_leptons<0>::ReadLepTableFromFile("/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module/eos_table/electrons/eos_electrons_primitive_new.txt");
-  eos.EOS_leptons<1>::ReadLepTableFromFile("/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module/eos_table/muons/eos_muons_primitive_new.txt");
+  eos.ReadBarTableFromFile("eos_table/baryons/DD2_bar.h5");
+  eos.EOS_leptons<0>::ReadLepTableFromFile("eos_table/electrons/eos_electrons_table.txt");
+  eos.EOS_leptons<1>::ReadLepTableFromFile("eos_table/muons/eos_muons_table.txt");
   eos.EOS_leptons<0>::m_lep_active = true;
   if (with_mu == true) eos.EOS_leptons<1>::m_lep_active = true;
 
   double nb = 1.20226528E+34 * 1.e-39;  // fm-3
   double T = 6.30957362E+00;			  // 1.31825639E+02;     // MeV
   double Y[2] = {7.00000003E-02, 0.01}; //{5.79999983E-01,0.00};  // #/baryons
-
+  
+  /* Print input quantities to standard output */
+  std::cout << std::scientific << std::setprecision(8);
   std::cout << "Input quantities: " << std::endl;
-  std::cout << "nb = " << nb << " " << "1/fm-3" << std::endl;
-  std::cout << "T  = " << T << " " << "MeV" << std::endl;
+  std::cout << "nb = " << nb   << " " << "1/fm-3" << std::endl;
+  std::cout << "T  = " << T    << " " << "MeV" << std::endl;
   std::cout << "Ye = " << Y[0] << " " << "#/baryons" << std::endl;
   std::cout << "Ym = " << Y[1] << " " << "#/baryons" << std::endl;
   std::cout << std::endl;
 
+  /* Compute EOS Output */
   FullEOSOutput out = eos.compute_full_EOS(nb, T, Y);
 
   const double etot = out.e + 1.0E+39 * nb * MeV * out.nuEOS.Z_tot;
   const double ptot = out.P + 1.0E+39 * nb * MeV * out.nuEOS.Z_tot / 3.;
   const double stot = out.s + out.nuEOS.s_tot;
 
+  /* Print EOS output to standard output */
   std::cout << "Output quantities: " << std::endl;
   std::cout << "d            = " << out.rho                    << " " << "g/cm3"      << std::endl;	
   std::cout << "yle          = " << out.Y_part.yle             << " " << "#/baryon"   << std::endl;	
