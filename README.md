@@ -80,22 +80,23 @@ The EOS output is organized in the `FullEOSOutput` structure which contains the 
 See `main.cpp` for an example on how to initialize the class and compute the full EOS output in a single thermodynamic point.
 
 ## Generating an output table: how to
-Tables including the contributions to the EOS of all the species can be generated using "eos_table/generate_global_table.cpp". The legend describing the content and the units can be read from the first line of the table.
+An example of code that generates output EOS tables by combining the contributions from the different species can be found at `output/generate_global_table.cpp`. The code can be compiled and run by running the command **`make output_table`** in the parent directory. The output file is saved in the `output/data/` directory. 
 
-The contribution of muons can be eventually switched off by setting the boolean variable "with_mu = false" at the beginning of the file.
+The contribution of muons can be switched on (off) by setting the boolean variable `with_mu` equal to `true` (`false`) at the beginning of the file.
 
-The input parameters are:
-  - nb : number density [fm-3]
-  - T  : temperature [MeV]
-  - Yq : charge fraction (equal to electron fraction, Ye, if muons are not considered)<br>
+The EOS output is computed by iterating over the following arrays of the input quantities:
+```c++
+  1. n_array  // Baryon number density [fm-3]
+  2. t_array  // Temperature [MeV]
+  3. yq_array // Charge fraction [#/baryons] (equal to electron fraction, Ye, if muons are not included)
+
   If muon contribution is active:
-  - Ym : muon fraction (in this case Ye = Yq-Ym by charge neutrality, please note that if Ye < 0 the EOS is not computed and the code jumps to the following iterartion)
+  4. ym_array // Muon fraction [#/baryons] (in this case Ye = Yq - Ym because of charge neutrality,
+              //                            if Ye < 0 the code direcly jumps to the following iterartion,
+              //                            please note that by doing so the output will not be precisely
+              //                            a table but just a collection of output EOS points)
+```
 
-The input nb, T, Yq arrays are directly from the baryonic EOS table, in order to avoid to introduce uncertainties associated with the interpolation of the baryonic table. The first two arrays are uniformly spaced in log space, while the third one is uniform in lin space.
-The input Ym array is uniformly log-spaced and can be adjusted by the user by acting on the boundaries, "ymmin" and "ymmax", and on the number of points, "n_ym".
+The input `n_array`, `t_array`, `yq_array` are read directly from the baryonic EOS table, in order to avoid to introduce uncertainties associated with its interpolation. The first two are uniformly log-spaced, while the third one is uniform in linear space. `ym_array` instead is uniformly log-spaced and can be adjusted by the user by acting on the boundaries, `ymmin` and `ymmax`, and on the number of points, `n_ym`.
 
-If necessary, the user can generate a coarser table by incrementing the variables controlling the step size of the loop over the input arrays ("di" for "n_array", "dj" for "t_array", "dk" for "yq_array" and "dl" for ym_array"). 
-
-To generate the table:
-  - Compile the code by running "make global_table" in the parent directory
-  - Execute the code by running "./eos_table/generate_global_table" (the output table will be saved in "eos_table/global/")
+If necessary, the user can generate a coarser table by incrementing the variables controlling the step size of the loops over the input arrays (`di` for `n_array`, `dj` for `t_array`, `dk` for `yq_array` and `dl` for `ym_array`). 
