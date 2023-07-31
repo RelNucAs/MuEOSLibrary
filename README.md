@@ -26,52 +26,56 @@ The class can be initalized by calling the constrctor `EOS_assembled(const int i
 
 The EOS output is computed by calling the class member function `FullEOSOutput EOS_assembled::compute_full_EOS(double nb, double T, double *Y)`.<br>
 The input parameters are the following:
-  - `double nb` : baryon number density [fm-3]<br>
-  - `double T`  : temperature [MeV]<br>
-  - `double Y[2] = {Ye, Ym}` : electron and muon fractions [#/baryon]<br>
+```c++
+  - double nb               // Baryon number density [fm-3]
+  - double T                // Temperature [MeV]
+  - double Y[2] = {Ye, Ym}  // Electron and muon fractions [#/baryon]
+```
 
 **Warning:** always check that the EOS is called in a thermodynamic point that falls within the boundaries of the input tables!
 
 The EOS output is organized in the `FullEOSOutput` structure which contains the following fields (please note that chemical potentials are including the rest-mass contribution):
-   - `double rho`                // Mass density [g/cm3]
-   - `double nb`                 // Baryon number density [1/fm3]
-   - `double T`                  // Temperature [MeV]
-   - `double mb`                 // Baryon mass [MeV]
-   - `double e`                  // Internal energy density [erg/cm3]
-   - `double P`                  // Pressure [erg/cm3]
-   - `double s`                  // Entropy per baryon [#/baryon]
-   - `double chem_pot.mu_n`      // Neutron chemical potential [MeV]
-   - `double chem_pot.mu_p`      // Proton chemical potential [MeV]
-   - `double chem_pot.mu_e`      // Electron chemical potential [MeV]
-   - `double chem_pot.mu_m`      // Muon chemical potential [MeV]
-   - `double chem_pot.mu_nue`    // Electron neutrino chemical potential [MeV] 
-   - `double chem_pot.mu_num`    // Muon neutrino chemical potential [MeV]
-   - `double chem_pot.mu_nux`    // Tau neutrino chemical potential [MeV]
-   - `double Y_part.yh`          // Heavy nuclei fraction [#/baryon]
-   - `double Y_part.ya`          // Alpha particle fraction [#/baryon]
-   - `double Y_part.yn`          // Neutron fraction [#/baryon]
-   - `double Y_part.yp`          // Proton fraction [#/baryon]
-   - `double Y_part.ye`          // Electron fraction [#/baryon]
-   - `double Y_part.ym`          // Muon fraction [#/baryon]
-   - `double Y_part.ynue`        // Electron neutrino fraction [#/baryon]
-   - `double Y_part.yanue`       // Electron antineutrino fraction [#/baryon]
-   - `double Y_part.ynum`        // Muon neutrino fraction [#/baryon]
-   - `double Y_part.yanum`       // Muon antineutrino fraction [#/baryon]
-   - `double Y_part.ynux`        // Tau (anti)neutrino fraction [#/baryon]
-   - `double Y_part.yle`         // Net electronic lepton fraction [#/baryons] (yle = ye + ynue - yanue)
-   - `double Y_part.ylm`         // Net muonic lepton fraction [#/baryon] (ylm = ym + ynum - yanum)
-   - `double nuEOS.z_nue`        // Electron neutrino energy per baryon [MeV/baryon]
-   - `double nuEOS.z_anue`       // Electron antineutrino energy per baryon [MeV/baryon]
-   - `double nuEOS.z_num`        // Muon neutrino energy per baryon [MeV/baryon]
-   - `double nuEOS.z_anum`       // Muon antineutrino energy per baryon [MeV/baryon]
-   - `double nuEOS.z_nux`        // Tau (anti)neutrino energy per baryon [MeV/baryon]
-   - `double nuEOS.z_tot`        // Total neutrino energy per baryon [MeV/baryon]
-   - `double nuEOS.s_nue`        // Electron neutrino entropy per baryon [#/baryon]
-   - `double nuEOS.s_anue`       // Electron antineutrino entropy per baryon [#/baryon]
-   - `double nuEOS.s_num`        // Muon neutrino entropy per baryon [#/baryon]
-   - `double nuEOS.s_anum`       // Muon antineutrino entropy per baryon [#/baryon]
-   - `double nuEOS.s_nux`        // Tau (anti)neutrino entropy per baryon [#/baryon]
-   - `double nuEOS.s_tot`        // Total neutrino entropy per baryon [#/baryon]
+```c++
+   - double rho                // Mass density [g/cm3]
+   - double nb                 // Baryon number density [1/fm3]
+   - double T                  // Temperature [MeV]
+   - double mb                 // Baryon mass [MeV]
+   - double e                  // Internal energy density [erg/cm3]
+   - double P                  // Pressure [erg/cm3]
+   - double s                  // Entropy per baryon [#/baryon]
+   - double chem_pot.mu_n      // Neutron chemical potential [MeV]
+   - double chem_pot.mu_p      // Proton chemical potential [MeV]
+   - double chem_pot.mu_e      // Electron chemical potential [MeV]
+   - double chem_pot.mu_m      // Muon chemical potential [MeV]
+   - double chem_pot.mu_nue    // Electron neutrino chemical potential [MeV] 
+   - double chem_pot.mu_num    // Muon neutrino chemical potential [MeV]
+   - double chem_pot.mu_nux    // Tau neutrino chemical potential [MeV]
+   - double Y_part.yh          // Heavy nuclei fraction [#/baryon]
+   - double Y_part.ya          // Alpha particle fraction [#/baryon]
+   - double Y_part.yn          // Neutron fraction [#/baryon]
+   - double Y_part.yp          // Proton fraction [#/baryon]
+   - double Y_part.ye          // Electron fraction [#/baryon]
+   - double Y_part.ym          // Muon fraction [#/baryon]
+   - double Y_part.ynue        // Electron neutrino fraction [#/baryon]
+   - double Y_part.yanue       // Electron antineutrino fraction [#/baryon]
+   - double Y_part.ynum        // Muon neutrino fraction [#/baryon]
+   - double Y_part.yanum       // Muon antineutrino fraction [#/baryon]
+   - double Y_part.ynux        // Tau (anti)neutrino fraction [#/baryon]
+   - double Y_part.yle         // Net electronic lepton fraction [#/baryons] (yle = ye + ynue - yanue)
+   - double Y_part.ylm         // Net muonic lepton fraction [#/baryon] (ylm = ym + ynum - yanum)
+   - double nuEOS.z_nue        // Electron neutrino energy per baryon [MeV/baryon]
+   - double nuEOS.z_anue       // Electron antineutrino energy per baryon [MeV/baryon]
+   - double nuEOS.z_num        // Muon neutrino energy per baryon [MeV/baryon]
+   - double nuEOS.z_anum       // Muon antineutrino energy per baryon [MeV/baryon]
+   - double nuEOS.z_nux        // Tau (anti)neutrino energy per baryon [MeV/baryon]
+   - double nuEOS.z_tot        // Total neutrino energy per baryon [MeV/baryon]
+   - double nuEOS.s_nue        // Electron neutrino entropy per baryon [#/baryon]
+   - double nuEOS.s_anue       // Electron antineutrino entropy per baryon [#/baryon]
+   - double nuEOS.s_num        // Muon neutrino entropy per baryon [#/baryon]
+   - double nuEOS.s_anum       // Muon antineutrino entropy per baryon [#/baryon]
+   - double nuEOS.s_nux        // Tau (anti)neutrino entropy per baryon [#/baryon]
+   - double nuEOS.s_tot        // Total neutrino entropy per baryon [#/baryon]
+```
 
 See `main.cpp` for an example on how to initialize the class and compute the full EOS output in a single thermodynamic point.
 
