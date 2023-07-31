@@ -14,35 +14,35 @@ void print_EOS_output(FullEOSOutput *eos_out, std::ostream& os) {
   const double ptot = eos_out->P + 1.0E+39 * eos_out->nb * MeV * eos_out->nuEOS.Z_tot / 3.;
   const double stot = eos_out->s + eos_out->nuEOS.s_tot;
 
-  os <<  eos_out->rho                          << "  ";          // Mass density [g/cm3]
-  os <<  eos_out->Y_part.yle                   << "  ";        // Electron lepton fraction [#/baryon]
-  os <<  eos_out->Y_part.ylm                   << "  ";        // Muon lepton fraction [#/baryon]
-  os <<  etot                                  << "  ";          // Internal energy density (including neutrinos) [erg/cm3]
-  os <<  eos_out->nb*1.0E+39                   << "  ";          // Number density [1/cm3]
-  os <<  eos_out->T                            << "  ";          // Temperature [MeV]
-  os <<  eos_out->Y_part.ye                    << "  ";         // Electron fraction [#/baryon]
-  os <<  eos_out->Y_part.ym                    << "  ";         // Muon fraction [#/baryon]
-  os <<  eos_out->e                            << "  ";          // Internal energy density (including neutrinos) [erg/cm3]
-  os <<  ptot                                  << "  ";       // Pressure (including neutrinos) [erg/cm3]
-  os <<  stot                                  << "  ";      // Entropy per baryon (including neutrinos) [#/baryon]
-  os <<  eos_out->Y_part.yh                    << "  ";        // Heavy nuclei fraction [#/baryon]
-  os <<  eos_out->Y_part.ya                    << "  ";        // Alpha particle fraction [#/baryon]
-  os <<  eos_out->Y_part.yp                    << "  ";        // Proton fraction [#/baryon]
-  os <<  eos_out->Y_part.yn                    << "  ";        // Neutron fraction [#/baryon]
-  os <<  eos_out->Y_part.ynue                  << "  ";      // Electron neutrino fraction [#/baryon]
-  os <<  eos_out->Y_part.yanue                 << "  ";     // Electron antineutrino fraction [#/baryon]
-  os <<  eos_out->Y_part.ynum                  << "  ";      // Muon neutrino fraction [#/baryon]
-  os <<  eos_out->Y_part.yanum                 << "  ";     // Muon antineutrino fraction [#/baryon]
-  os <<  eos_out->Y_part.ynux                  << "  ";      // Tau (anti)neutrino fraction [#/baryon]
-  os <<  eos_out->nuEOS.Z_nue                  << "  ";      // Electron neutrino energy per baryon [MeV/baryon]
-  os <<  eos_out->nuEOS.Z_anue                 << "  ";     // Electron antineutrino energy per baryon [MeV/baryon]
-  os <<  eos_out->nuEOS.Z_num                  << "  ";      // Muon neutrino energy per baryon [MeV/baryon]
-  os <<  eos_out->nuEOS.Z_anum                 << "  ";     // Muon antineutrino energy per baryon [MeV/baryon]
-  os <<  eos_out->nuEOS.Z_nux                  << "  ";      // Tau (anti)neutrino energy per baryon [MeV/baryon]
-  os <<  eos_out->chem_pot.mu_p - eos_out->mb  << "  "; // Proton chemical potential wrt baryon (neutron) mass [MeV]
-  os <<  eos_out->chem_pot.mu_n - eos_out->mb  << "  "; // Neutron chemical potential wrt baryon (neutron) mass [MeV]
-  os <<  eos_out->chem_pot.mu_e                << "  ";      // Electron chemical potential (with rest mass) [MeV]
-  os <<  eos_out->chem_pot.mu_m                << "  ";      // Muon chemical potential (with rest mass) [MeV]
+  os <<  eos_out->rho                          << "  ";  // Mass density [g/cm3]
+  os <<  eos_out->Y_part.yle                   << "  ";  // Electron lepton fraction [#/baryon]
+  os <<  eos_out->Y_part.ylm                   << "  ";  // Muon lepton fraction [#/baryon]
+  os <<  etot                                  << "  ";  // Internal energy density (including neutrinos) [erg/cm3]
+  os <<  eos_out->nb*1.0E+39                   << "  ";  // Number density [1/cm3]
+  os <<  eos_out->T                            << "  ";  // Temperature [MeV]
+  os <<  eos_out->Y_part.ye                    << "  ";  // Electron fraction [#/baryon]
+  os <<  eos_out->Y_part.ym                    << "  ";  // Muon fraction [#/baryon]
+  os <<  eos_out->e                            << "  ";  // Internal energy density (including neutrinos) [erg/cm3]
+  os <<  ptot                                  << "  ";  // Pressure (including neutrinos) [erg/cm3]
+  os <<  stot                                  << "  ";  // Entropy per baryon (including neutrinos) [#/baryon]
+  os <<  eos_out->Y_part.yh                    << "  ";  // Heavy nuclei fraction [#/baryon]
+  os <<  eos_out->Y_part.ya                    << "  ";  // Alpha particle fraction [#/baryon]
+  os <<  eos_out->Y_part.yp                    << "  ";  // Proton fraction [#/baryon]
+  os <<  eos_out->Y_part.yn                    << "  ";  // Neutron fraction [#/baryon]
+  os <<  eos_out->Y_part.ynue                  << "  ";  // Electron neutrino fraction [#/baryon]
+  os <<  eos_out->Y_part.yanue                 << "  ";  // Electron antineutrino fraction [#/baryon]
+  os <<  eos_out->Y_part.ynum                  << "  ";  // Muon neutrino fraction [#/baryon]
+  os <<  eos_out->Y_part.yanum                 << "  ";  // Muon antineutrino fraction [#/baryon]
+  os <<  eos_out->Y_part.ynux                  << "  ";  // Tau (anti)neutrino fraction [#/baryon]
+  os <<  eos_out->nuEOS.Z_nue                  << "  ";  // Electron neutrino energy per baryon [MeV/baryon]
+  os <<  eos_out->nuEOS.Z_anue                 << "  ";  // Electron antineutrino energy per baryon [MeV/baryon]
+  os <<  eos_out->nuEOS.Z_num                  << "  ";  // Muon neutrino energy per baryon [MeV/baryon]
+  os <<  eos_out->nuEOS.Z_anum                 << "  ";  // Muon antineutrino energy per baryon [MeV/baryon]
+  os <<  eos_out->nuEOS.Z_nux                  << "  ";  // Tau (anti)neutrino energy per baryon [MeV/baryon]
+  os <<  eos_out->chem_pot.mu_p - eos_out->mb  << "  ";  // Proton chemical potential wrt baryon (neutron) mass [MeV]
+  os <<  eos_out->chem_pot.mu_n - eos_out->mb  << "  ";  // Neutron chemical potential wrt baryon (neutron) mass [MeV]
+  os <<  eos_out->chem_pot.mu_e                << "  ";  // Electron chemical potential (with rest mass) [MeV]
+  os <<  eos_out->chem_pot.mu_m                << "  ";  // Muon chemical potential (with rest mass) [MeV]
   os << std::endl;
 
   return;
@@ -88,17 +88,20 @@ int main () {
 
   /* Output stream */
   std::ofstream Iout("output/data/"+table_name);
-	
-  /* Define table input paramters
-	
-  Input parameters:
-    - nb: baryon number density [1/fm3]
-    -  T: temperature [MeV]
-	- yq: charge fraction [#/baryon]
-	- ym: muon fraction [#/baryon]
+	Iout << std::scientific << std::setprecision(10); // scientific format for output table
 
-  where ye = yq - ym (charge neutrality), in the loop below we discard negative values of the electron fraction ye
+  /* Define table input arrays 
+	
+    Input parameters:
+      - nb: baryon number density [1/fm3]
+      -  T: temperature [MeV]
+	    - yq: charge fraction [#/baryon] (ye = yq if muons are not included)
+	    - ym: muon fraction   [#/baryon] (only needed if muons are included, the electron fraction is then
+                                        obtained from charge neutrality, ye = yq - ym, and discarded in the
+                                        loop in the case it is negative)
 
+    For (nb, T, yq) we take the same grid as in the input baryon EOS CompOSE table, while for ym we define
+    a uniformly log-spaced grid
   */
 
   /* Table dimensions */
@@ -127,9 +130,6 @@ int main () {
   const double log_ymmax = log10(ymmax);
         
   for (int i=0; i<n_ym; i++) ym_array.push_back(log_ymmin + static_cast<double>(i) * (log_ymmax-log_ymmin) / static_cast<double>(n_ym));
-
-
-  Iout << std::scientific << std::setprecision(10); // scientific format for output table
 
   /* Output stream -> legend */
   Iout << "# d [g/cm3], yle [#/baryon], ylm [#/baryon], u [erg/cm3], nb [1/cm3], T [MeV], ye [#/baryon], ";
@@ -165,11 +165,12 @@ int main () {
             Y[0] = ye;
             Y[1] = ym;
 
+            // Print input quantities to standard output
             std::cout << i  << "  " << j << "  " << k    << "  " << l    << "  ";
             std::cout << nb << "  " << T << "  " << Y[0] << "  " << Y[1] << std::endl;
 
-            eos_out = eos.compute_full_EOS(nb, T, Y);
-            print_EOS_output(&eos_out, Iout);       
+            eos_out = eos.compute_full_EOS(nb, T, Y); // compute full EOS output
+            print_EOS_output(&eos_out, Iout);  // print output to file
           }
 	    }
       }
@@ -184,11 +185,12 @@ int main () {
         for (int k=0; k<n_yq; k+=dk) {
           Y[0] = yq_array[k];
 
+          // Print input quantities to standard output
           std::cout << i  << "  " << j << "  " << k    << "  ";
           std::cout << nb << "  " << T << "  " << Y[0] << std::endl;
 
-          eos_out = eos.compute_full_EOS(nb, T, Y);
-          print_EOS_output(&eos_out, Iout); 
+          eos_out = eos.compute_full_EOS(nb, T, Y); // compute full EOS output
+          print_EOS_output(&eos_out, Iout);   // print output to file
 	    }  
       }
     }
