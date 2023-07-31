@@ -138,7 +138,7 @@ void print_rel_diff(EOS_assembled* eos, std::vector<std::array<double,n_var>>* t
 
 int main () {
   /* Name of baryon EOS table */
-  std::string BarTableName = "eos_table/baryons/DD2_bar.h5";  // baryon table
+  std::string BarTableName = "DD2_bar.h5";  // baryon table
   
   /* Initialize global EOS class
 

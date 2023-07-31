@@ -7,7 +7,7 @@ int main() {
   const bool with_mu = true;
 
   /* Name of baryon EOS table */
-  std::string BarTableName = "eos_table/baryons/DD2_bar.h5";  // baryon table
+  std::string BarTableName = "DD2_bar.h5";  // baryon table
   
   /* Initialize global EOS class
 
@@ -82,8 +82,8 @@ int main() {
    - double Y_part.ynum;        // Muon neutrino fraction [#/baryon]
    - double Y_part.yanum;       // Muon antineutrino fraction [#/baryon]
    - double Y_part.ynux;        // Tau (anti)neutrino fraction [#/baryon]
-   - double Y_part.yle;         // Net electronic lepton fraction [#/baryons] (yle = )
-   - double Y_part.ylm;         // Net muonic lepton fraction [#/baryon] (ylm = )
+   - double Y_part.yle;         // Net electronic lepton fraction [#/baryons] (yle = ye + ynue - yanue)
+   - double Y_part.ylm;         // Net muonic lepton fraction [#/baryon] (ylm = ym + ynum - yanum)
    - double nuEOS.z_nue;        // Electron neutrino energy per baryon [MeV/baryon]
    - double nuEOS.z_anue;       // Electron antineutrino energy per baryon [MeV/baryon]
    - double nuEOS.z_num;        // Muon neutrino energy per baryon [MeV/baryon]

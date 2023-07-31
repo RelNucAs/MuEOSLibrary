@@ -288,7 +288,7 @@ void PrintHeader(EOS_assembled* eos, std::string table_name, std::ostream& os) {
 
 int main () {
     /* Name of baryon EOS table */
-    std::string BarTableName = "eos_table/baryons/DD2_bar.h5";  // baryon table
+    std::string BarTableName = "DD2_bar.h5";  // baryon table
 
     /* Initialize global EOS class
 

@@ -25,7 +25,7 @@ std::string MTableName = "eos_table/muons/eos_muons_table.txt"; // muon table
    - BarTableName: path of baryon EOS table
 */
 EOS_assembled::EOS_assembled(const int id_eos, const bool el_bool, const bool mu_bool, std::string BarTableName) {
-  ReadBarTableFromFile(BarTableName);
+  ReadBarTableFromFile("eos_table/baryons/" + BarTableName);
   EOS_leptons<0>::m_lep_active = el_bool;
   EOS_leptons<1>::m_lep_active = mu_bool;
   if (id_eos == 1) {
