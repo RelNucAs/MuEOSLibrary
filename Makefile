@@ -76,3 +76,5 @@ clean:
 	rm -f $(OUT_DIR)bin/generate*
 	rm -f $(TEST_DIR)obj/*.o
 	rm -f $(TEST_DIR)bin/test*
+	rm -f main
+	rm -f main.o
