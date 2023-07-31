@@ -72,7 +72,7 @@ class EOS_assembled : public EOS_baryons, public EOS_leptons<0>, public EOS_lept
 
     public:
     /// Constructor
-    //EOS_assembled();
+    EOS_assembled(const int id_eos, const bool el_bool, const bool mu_bool, std::string BarTableName);
 
     /// Destructor
     //~EOS_assembled();
@@ -106,11 +106,6 @@ class EOS_assembled : public EOS_baryons, public EOS_leptons<0>, public EOS_lept
 
     /// Calculate the neutrino EOS quantities using.
     NeutrinoEOSOutput compute_neutrino_EOS(double n, double T, double *Y);
-
-    /// Read in tables
-    void ReadTables(std::string BarTableName,
-                    std::string ETableName,
-                    std::string MTableName);
 
     /// Calculate the full EOS output using.
     FullEOSOutput compute_full_EOS(double n, double T, double *Y);

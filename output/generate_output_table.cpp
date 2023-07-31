@@ -64,16 +64,20 @@ int main () {
   std::cout << "#####################" << std::endl;
   std::cout << std::endl;
 
-  /* Global EOS class */
-  EOS_assembled eos;
+  /* Name of baryon EOS table */
+  std::string BarTableName = "eos_table/baryons/DD2_bar.h5";  // baryon table
 
-  /* Read baryon table and initialize global EOS */
-  // @TODO: change path
-  eos.ReadBarTableFromFile("/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module/eos_table/baryons/DD2_bar.h5");
-  eos.EOS_leptons<0>::m_lep_active = true;
-  if (with_mu == true) eos.EOS_leptons<1>::m_lep_active = true;
+  /* Initialize global EOS class
 
+  Constructor -> EOS_assembled(const int id_eos, const bool el_bool, const bool mu_bool, std::string BarTableName)
 
+  Inputs:
+   - id_EOS: method for EOS computation (1: interpolation, 2: on-the-fly)
+   - el_bool: flag for activating electrons
+   - mu_bool: flag for activating muons
+   - BarTableName: path of baryon EOS table  */
+  EOS_assembled eos(2, true, with_mu, BarTableName);
+  
   /* Define name of output table */
   std::string table_name;
   if (with_mu == true) {

@@ -5,7 +5,7 @@
 #include <array>
 #include <cmath>
 
-#include "../src/eos_species/eos_assembled.hpp"
+#include "../../src/eos_species/eos_assembled.hpp"
 
 #define n_var 22
 
@@ -22,8 +22,6 @@
 #define nb_thr   0.01               // minimum number density for neutrino trapping in fm-3
 #define corner_check true           // boolean variable for checking corner cases
 
-/* Boolean variable for including of muons */
-const bool with_mu = true;
 
 /* Function computing the EOS output */
 FullEOSOutput compute_EOS_nu_thres(EOS_assembled* eos, double nb, double T, double *Y) {
@@ -289,14 +287,19 @@ void PrintHeader(EOS_assembled* eos, std::string table_name, std::ostream& os) {
 }
 
 int main () {
-    /* Global EOS class */
-    EOS_assembled eos;
+    /* Name of baryon EOS table */
+    std::string BarTableName = "eos_table/baryons/DD2_bar.h5";  // baryon table
 
-    /* Read EOS tables */
-    // @TODO: change path
-    eos.ReadBarTableFromFile("/home/leonardo/Desktop/PhD_work/BNS_muons/EOS_module/eos_table/baryons/DD2_bar.h5");
-    eos.EOS_leptons<0>::m_lep_active = true;
-    if (with_mu == true) eos.EOS_leptons<1>::m_lep_active = true;
+    /* Initialize global EOS class
+
+    Constructor -> EOS_assembled(const int id_eos, const bool el_bool, const bool mu_bool, std::string BarTableName)
+
+    Inputs:
+     - id_EOS: method for EOS computation (1: interpolation, 2: on-the-fly)
+     - el_bool: flag for activating electrons
+     - mu_bool: flag for activating muons
+     - BarTableName: path of baryon EOS table  */
+    EOS_assembled eos(2, true, true, BarTableName);
 
     /* Input stream */
     std::string ref_table = "data_DD2_ylmu_last.txt"; // initial Yl_mu = Ym_cold

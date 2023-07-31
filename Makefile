@@ -41,7 +41,7 @@ $(OBJ_DIR)%.o: %.cpp
 $(OUT_DIR)obj/%.o: $(OUT_DIR)%.cpp
 	$(CXX) $(RFLAGS) $(H5_INCLUDE) -c -o $@ $< $(H5_LIB) $(H5_FLAGS)
 
-$(TEST_DIR)obj/%.o: $(TEST_DIR)%.cpp
+$(TEST_DIR)obj/%.o: $(TEST_DIR)src/%.cpp
 	$(CXX) $(RFLAGS) $(H5_INCLUDE) -c -o $@ $< $(H5_LIB) $(H5_FLAGS)
 
 eos_interp: $(SRC_DIR)eos_species/eos_assembled.cpp
