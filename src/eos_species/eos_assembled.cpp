@@ -20,17 +20,17 @@ std::string MTableName = "eos_table/muons/eos_muons_table.txt"; // muon table
 /*
   Inputs:
    - id_EOS: method for EOS computation (1: interpolation, 2: on-the-fly)
-   - el_bool: flag for activating electrons
-   - mu_bool: flag for activating muons
+   - el_flag: flag for activating electrons
+   - mu_flag: flag for activating muons
    - BarTableName: path of baryon EOS table
 */
-EOS_assembled::EOS_assembled(const int id_eos, const bool el_bool, const bool mu_bool, std::string BarTableName) {
+EOS_assembled::EOS_assembled(const int id_eos, const bool el_flag, const bool mu_flag, std::string BarTableName) {
   ReadBarTableFromFile("eos_table/baryons/" + BarTableName);
-  EOS_leptons<0>::m_lep_active = el_bool;
-  EOS_leptons<1>::m_lep_active = mu_bool;
+  EOS_leptons<0>::m_lep_active = el_flag;
+  EOS_leptons<1>::m_lep_active = mu_flag;
   if (id_eos == 1) {
-    if (el_bool == true) EOS_leptons<0>::ReadLepTableFromFile(ETableName);
-    if (mu_bool == true) EOS_leptons<1>::ReadLepTableFromFile(MTableName);
+    if (el_flag == true) EOS_leptons<0>::ReadLepTableFromFile(ETableName);
+    if (mu_flag == true) EOS_leptons<1>::ReadLepTableFromFile(MTableName);
   } else if (id_eos != 2) {
     std::cout << "ERROR: wrong index for EOS computation in InitalizeEOS" << std::endl;
     std::exit(EXIT_FAILURE);

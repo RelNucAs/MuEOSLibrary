@@ -142,12 +142,12 @@ int main () {
   
   /* Initialize global EOS class
 
-  Constructor -> EOS_assembled(const int id_eos, const bool el_bool, const bool mu_bool, std::string BarTableName)
+  Constructor -> EOS_assembled(const int id_eos, const bool el_flag, const bool mu_flag, std::string BarTableName)
 
   Inputs:
    - id_EOS: method for EOS computation (1: interpolation, 2: on-the-fly)
-   - el_bool: flag for activating electrons
-   - mu_bool: flag for activating muons
+   - el_flag: flag for activating electrons
+   - mu_flag: flag for activating muons
    - BarTableName: path of baryon EOS table  */
   EOS_assembled eos(2, true, true, BarTableName);
 

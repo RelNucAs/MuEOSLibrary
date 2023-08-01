@@ -72,7 +72,7 @@ class EOS_assembled : public EOS_baryons, public EOS_leptons<0>, public EOS_lept
 
     public:
     /// Constructor
-    EOS_assembled(const int id_eos, const bool el_bool, const bool mu_bool, std::string BarTableName);
+    EOS_assembled(const int id_eos, const bool el_flag, const bool mu_flag, std::string BarTableName);
 
     /// Destructor
     //~EOS_assembled();

@@ -22,7 +22,7 @@ Here is the list of the different particle species that the class can account fo
 ## EOS class 
 The general-purpose EOS of dense matter is implemented through the C++ class named **`EOS_assembled`**, whose definition can be found in `src/eos_species/eos_assembled.cpp`
 
-The class can be initalized by calling the constrctor `EOS_assembled(const int id_eos, const bool el_bool, const bool mu_bool, std::string BarTableName)`, where `id_eos` is an index determining the way in which the leptonic EOS is computed (0: table interpolation, 1: on-the-fly calculation, see description above), `el_bool` (`mu_bool`) ia a boolean variable that can be set to switch on/off the inclusion of electrons (muons) and `BarTableName` is the name of the baryonic EOS table.
+The class can be initalized by calling the constrctor `EOS_assembled(const int id_eos, const bool el_flag, const bool mu_flag, std::string BarTableName)`, where `id_eos` is an index determining the way in which the leptonic EOS is computed (0: table interpolation, 1: on-the-fly calculation, see description above), `el_flag` (`mu_flag`) ia a boolean variable that can be set to switch on/off the inclusion of electrons (muons) and `BarTableName` is the name of the baryonic EOS table.
 
 The EOS output is computed by calling the class member function `FullEOSOutput EOS_assembled::compute_full_EOS(double nb, double T, double *Y)`.<br>
 The input parameters are the following:
