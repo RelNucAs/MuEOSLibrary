@@ -102,3 +102,6 @@ The EOS output is computed by iterating over the following arrays of the input q
 The input `n_array`, `t_array`, `yq_array` are read directly from the baryonic EOS table, in order to avoid to introduce uncertainties associated with its interpolation. The first two are uniformly log-spaced, while the third one is uniform in linear space. `ym_array` instead is uniformly log-spaced and can be adjusted by the user by acting on the boundaries, `ymmin` and `ymmax`, and on the number of points, `n_ym`.
 
 If necessary, the user can generate a coarser table by incrementing the variables controlling the step size of the loops over the input arrays (`di` for `n_array`, `dj` for `t_array`, `dk` for `yq_array` and `dl` for `ym_array`). 
+
+## Generating libraries
+In order to couple the EOS class to an external code, run `make lib` in the parent directory to generate two static libraries which will be saved under the `lib/` folder. The `libmueos_int.a` (`libmueos_otf.a`) library contains the version of the code where the leptonic EOS is computed via table interpolation (on-the-fly calculation of Fermi-Dirac integrals).
