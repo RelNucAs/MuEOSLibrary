@@ -13,7 +13,9 @@ Here is the list of the different particle species that the class can account fo
   Photons are treated as an ideal Bose gas in thermal equilibrium with matter and with zero chemical potential. The photon EOS is implemented via the on-the-fly computation of the associated formulae.
 
   - **Neutrinos**<br>
-  Neutrinos are treated as a massless Fermi gas in weak and thermal equilibrium with matter and radiation. The neutrinos EOS is implemented via the on-the-fly computation of the associated formulae. The neutrino contribution at equilibrium to the total additive quantities (e.g. internal energy, pressure, entropy etc.) must be added manually, so that 
+  Neutrinos are treated as a massless Fermi gas in weak and thermal equilibrium with matter and radiation. The neutrinos EOS is implemented via the on-the-fly computation of the associated formulae.
+
+**Warning:** additive EOS output quantities like the internal energy, pressure and entropy do not include the neutrino contribution by default, it has to be added manually in equilibrium conditions. This choice was made in order to make the EOS call valid also in non-equilibrium conditions, where the user can arbitrarely apply a damping factor to neutrino EOS quantities in order to account for the non equilibrium.
 
 ## Preliminary steps
   - Place the HDF5 file containing the baryonic EOS table (must be PyCompOSE output, see description above about baryonic EOS) in the `eos_table/baryons/`  folder.
