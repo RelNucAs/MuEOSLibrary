@@ -5,9 +5,6 @@
 
 #include "../src/eos_species/eos_assembled.hpp"
 
-/* Boolean variable for including of muons */
-const bool with_mu = true; // false
-
 /* Function printing the EOS output to file */
 void print_EOS_output(FullEOSOutput *eos_out, std::ostream& os) {
   const double etot = eos_out->e + 1.0E+39 * eos_out->nb * MeV * eos_out->nuEOS.Z_tot;
@@ -49,7 +46,7 @@ void print_EOS_output(FullEOSOutput *eos_out, std::ostream& os) {
 }
 
 int main () {
-  /* Boolean variable for including of muons */
+  /* Boolean variable for inclusion of muons */
   const bool with_mu = true; // false
 	
   std::cout << std::scientific; // scientific format for std output
@@ -83,12 +80,12 @@ int main () {
   if (with_mu == true) {
     table_name = "eos_global_w_mu.txt";
   } else {
-	table_name = "eos_global_wo_mu.txt";
+    table_name = "eos_global_wo_mu.txt";
   }
 
   /* Output stream */
   std::ofstream Iout("output/data/"+table_name);
-	Iout << std::scientific << std::setprecision(10); // scientific format for output table
+  Iout << std::scientific << std::setprecision(10); // scientific format for output table
 
   /* Define table input arrays 
 	
@@ -152,7 +149,7 @@ int main () {
     std::cout << "# id_n, id_t, id_ye, id_ym,  nb [1/fm3], T [MeV], Yq [#/baryon], Ym [#/baryon]" << std::endl;
     for (int i=0; i<n_nb; i+=di) {
       nb = exp(n_array[i]);
-	  for (int j=0; j<n_t; j+=dj) {
+      for (int j=0; j<n_t; j+=dj) {
         T = exp(t_array[j]);
         for (int k=0; k<n_yq; k+=dk) {
           yq = yq_array[k];
@@ -172,9 +169,9 @@ int main () {
             eos_out = eos.compute_full_EOS(nb, T, Y); // compute full EOS output
             print_EOS_output(&eos_out, Iout);  // print output to file
           }
-	    }
+        }
       }
-	}
+    }
   } else {
     /* Write table WITHOUT MUONS to output file */
     std::cout << "# id_n, id_t, id_ye, nb [1/fm3], T [MeV], Yq [#/baryon]" << std::endl;
@@ -191,7 +188,7 @@ int main () {
 
           eos_out = eos.compute_full_EOS(nb, T, Y); // compute full EOS output
           print_EOS_output(&eos_out, Iout);   // print output to file
-	    }  
+        }  
       }
     }
   }
