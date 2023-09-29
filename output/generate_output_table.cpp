@@ -19,7 +19,7 @@ void print_EOS_output(FullEOSOutput *eos_out, std::ostream& os) {
   os <<  eos_out->T                            << "  ";  // Temperature [MeV]
   os <<  eos_out->Y_part.ye                    << "  ";  // Electron fraction [#/baryon]
   os <<  eos_out->Y_part.ym                    << "  ";  // Muon fraction [#/baryon]
-  os <<  eos_out->e                            << "  ";  // Internal energy density (including neutrinos) [erg/cm3]
+  os <<  eos_out->e                            << "  ";  // Internal energy density (fluid only) [erg/cm3]
   os <<  ptot                                  << "  ";  // Pressure (including neutrinos) [erg/cm3]
   os <<  stot                                  << "  ";  // Entropy per baryon (including neutrinos) [#/baryon]
   os <<  eos_out->Y_part.yh                    << "  ";  // Heavy nuclei fraction [#/baryon]
