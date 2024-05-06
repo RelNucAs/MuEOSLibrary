@@ -153,10 +153,10 @@ HelmEOSDer der_cs2_num(double nLep, double temp, double id_L) {
   out.dsdn = s * (log(tmp_2.sl + tmp_2.a_sl) - log(tmp_1.sl + tmp_1.a_sl)) / (nLep_2-nLep_1);
 
   eta_1 = rtsafe(1.e39*nLep, temp_1, id_L, &FD_integ);
-  tmp_1 = eos_helm_from_eta(eta, temp_1, id_L, &FD_integ);
+  tmp_1 = eos_helm_from_eta(eta_1, temp_1, id_L, &FD_integ);
 
   eta_2 = rtsafe(1.e39*nLep, temp_2, id_L, &FD_integ);
-  tmp_2 = eos_helm_from_eta(eta, temp_2, id_L, &FD_integ);
+  tmp_2 = eos_helm_from_eta(eta_2, temp_2, id_L, &FD_integ);
 
   out.dPdt = P * (log(tmp_2.pl + tmp_2.a_pl) - log(tmp_1.pl + tmp_1.a_pl)) / (temp_2-temp_1);
   out.dsdt = s * (log(tmp_2.sl + tmp_2.a_sl) - log(tmp_1.sl + tmp_1.a_sl)) / (temp_2-temp_1);
