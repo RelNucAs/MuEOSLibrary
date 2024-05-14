@@ -109,7 +109,7 @@ void make_lep_table(const int id_L) {
 
         eos_out.push_back(eos_point);
         eos_der.push_back(der_cs2(nLep, temp, id_L));
-        //der_out.push_back(der_cs2_num(nLep, temp, id_L));
+        //eos_der.push_back(der_cs2_num(nLep, temp, id_L));
 
         eta = (eos_point.mul - mL[id_L]) / temp;
         Ieta << eta << " ";

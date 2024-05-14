@@ -70,6 +70,7 @@ HelmEOSOutput eos_helm_full(double nLep, double temp, const int id_L) {
 HelmEOSDer der_cs2(double nLep, double temp, const int id_L) {
   // Define theta (relativity parameter)
   const double theta = temp / mL[id_L];
+  const double thetasqr = theta * theta;
 
   GFDs FD_integ;
   const double eta = rtsafe(1.e39*nLep, temp, id_L, &FD_integ);
@@ -106,6 +107,16 @@ HelmEOSDer der_cs2(double nLep, double temp, const int id_L) {
 
   const double dn = f12_dn+a_f12_dn + theta*(f32_dn+a_f32_dn);
 
+  //const double f32_dn_diff = f32_dn - a_f32_dn;
+
+  const double detadT = - (1.5 * (f12 - a_f12) + theta * (2.5 * (f32 - a_f32) + (f12_dT - a_f12_dT)) + thetasqr * (f32_dT - a_f32_dT) - 2. * a_f12_dn / theta - 2. * a_f32_dn) / (f12_dn + a_f12_dn + theta * (f32_dn + a_f32_dn)) / theta / mL[id_L];
+
+  const double dPdT_partial = K3[id_L] * pow(theta,1.5) * (5. * (f32 + a_f32) + theta * (3.5 * (f52 + a_f52) + 2. * (f32_dT + a_f32_dT)) + thetasqr * (f52_dT + a_f52_dT) + 2. * a_f32_dn / theta + 2. * a_f52_dn);
+  const double dPdeta_partial = K3[id_L] * mL[id_L] * pow(theta,2.5) * (2. * (f32_dn - a_f32_dn) + theta * (f52_dn - a_f52_dn));
+
+  const double dsdT_partial = K[id_L] / mL[id_L] * pow(theta,0.5) * (- 1.5 * eta * f12 - (4.5 * a_eta - 3. / theta) * a_f12 + 2.5 * (1. - eta * theta) * f32 + (43./6. - 2.5 * a_eta * theta) * a_f32 + 10./3. * theta * (f52 + a_f52) - eta * theta * f12_dT + (10./3. - 3. * a_eta * theta) * a_f12_dT + theta * (5./3. - eta * theta) * f32_dT + theta * (13./3. - a_eta * theta) * a_f32_dT + 4./3. * thetasqr * (f52_dT + a_f52_dT) - 2. * a_eta * a_f12_dn / theta); 
+  const double dsdeta_partial = K[id_L] * pow(theta,1.5) * (- (f12 - a_f12) - theta * (f32 - a_f32) - eta * f12_dn + a_eta * a_f12_dn + (5./3. - eta * theta) * f32_dn - (5./3. - a_eta * theta) * a_f32_dn + 4./3. * theta * (f52_dn - a_f52_dn));
+  
   HelmEOSDer out;
 
   // @TODO: optimize calculation of constants
@@ -113,9 +124,9 @@ HelmEOSDer der_cs2(double nLep, double temp, const int id_L) {
 
   out.dsdn = (-f12+a_f12-eta*f12_dn+a_eta*a_f12_dn+5./3.*(f32_dn-a_f32_dn) - theta*(f32-a_f32+eta*f32_dn-a_eta*a_f32_dn-4./3.*(f52_dn-a_f52_dn))) / dn;
 
-  out.dPdt = K3[id_L] * pow(theta,1.5) * (5.*(f32+a_f32) + theta*(3.5*(f52+a_f52)+2.*(f32_dT+a_f32_dT)) + theta*theta*(f52_dT+a_f52_dT));
+  out.dPdt = dPdT_partial + dPdeta_partial * detadT;
         
-  out.dsdt = K[id_L]/mL[id_L] * pow(theta,0.5) * (-1.5*(eta*f12+a_eta*a_f12) + 2.5*(f32+a_f32) + theta*(-2.5*(eta*f32+a_eta*a_f32) + 10./3.*(f52+a_f52) - (eta*f12_dT+a_eta*a_f12_dT) + 5./3.*(f32_dT+a_f32_dT)) + theta*theta * (-(eta*f32_dT+a_eta*a_f32_dT) + 4./3.*(f52_dT+a_f52_dT)));
+  out.dsdt = dsdT_partial + dsdeta_partial * detadT;
 
   return out;
 }
