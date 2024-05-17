@@ -78,55 +78,56 @@ HelmEOSDer der_cs2(double nLep, double temp, const int id_L) {
   // @TODO: optimize computation of Fermi-Dirac integrals here
 
   // Compute missing Generalized Fermi-Dirac integrals
-  const double f12 = FD_integ.f12;
-  const double f32 = FD_integ.f32;
-  const double f52 = compute_res(eta,   theta, 2.5); // k = 5/2
+  const double f_12 = FD_integ.f12;
+  const double f_32 = FD_integ.f32;
+  const double f_52 = compute_res(eta, theta, 2.5); // k = 5/2
  
-  const double f12_dn = compute_res_ed(eta, theta, 0.5);
-  const double f32_dn = compute_res_ed(eta, theta, 1.5);
-
-  const double f12_dT = (f32_dn - 1.5*f12) / theta;
-  const double f32_dT = (f32 - 4.*f12_dT) / (2.*theta);
-  const double f52_dT = (f52 - 4.*f32_dT) / (2.*theta);
-  const double f52_dn = theta*f32_dT + 2.5*f32;
+  const double f_12_deta = compute_res_ed(eta, theta, 0.5);
+  const double f_32_deta = compute_res_ed(eta, theta, 1.5);
 
   // Degeneracy parameter of anti-leptons
   const double a_eta = - (eta + 2. / theta);
 
-  const double a_f12 = FD_integ.a_f12;
-  const double a_f32 = FD_integ.a_f32;
-  const double a_f52 = compute_res(a_eta, theta, 2.5); // k = 5/2
+  const double a_f_12 = FD_integ.a_f12;
+  const double a_f_32 = FD_integ.a_f32;
+  const double a_f_52 = compute_res(a_eta, theta, 2.5); // k = 5/2
 
-  const double a_f12_dn = compute_res_ed(a_eta, theta, 0.5);
-  const double a_f32_dn = compute_res_ed(a_eta, theta, 1.5);
+  const double a_f_12_deta = compute_res_ed(a_eta, theta, 0.5);
+  const double a_f_32_deta = compute_res_ed(a_eta, theta, 1.5);
 
-  const double a_f12_dT = (a_f32_dn - 1.5*a_f12) / theta;
-  const double a_f32_dT = (a_f32 - 4.*a_f12_dT) / (2.*theta);
-  const double a_f52_dT = (a_f52 - 4.*a_f32_dT) / (2.*theta);
-  const double a_f52_dn = theta*a_f32_dT + 2.5*a_f32;
+  const double x0 = 2.*a_f_32_deta;
+  const double x1 = 4.*a_f_52 + 4.*f_52;
+  const double x2 = 3.*f_12;
+  const double x3 = -x2;
+  const double x4 = 2.*a_f_12_deta;
+  const double x5 = a_f_32_deta*eta;
+  const double x6 = 3.*a_f_12;
+  const double x7 = 3.*f_32;
+  const double x8 = 3.*a_f_32;
+  const double x9 = x7 - x8;
+  const double x10 = x2 - x6;
+  const double x11 = theta*x9 + x10;
+  const double x12 = -a_f_32_deta - f_32_deta;
+  const double x13 = theta*(-a_f_12_deta*eta - eta*f_12_deta + theta*(-eta*f_32_deta - x5 + x9) + x10 + x12) - x4;
+  const double x14 = 1./(a_f_12_deta + f_12_deta + theta*(a_f_32_deta + f_32_deta));
 
-  const double dn = f12_dn+a_f12_dn + theta*(f32_dn+a_f32_dn);
+  const double detadT = x14*(-theta*(x11 + x12) + x4) / (theta * theta); 
 
-  //const double f32_dn_diff = f32_dn - a_f32_dn;
+  const double dPdT_partial = sqrt(theta) * (6.*a_f_12 + theta*(11.*a_f_32 + 5.*f_32 + theta*x1) - x0); 
+  const double dPdeta_partial = pow(theta, 2.5) * x11; 
 
-  const double detadT = - (1.5 * (f12 - a_f12) + theta * (2.5 * (f32 - a_f32) + (f12_dT - a_f12_dT)) + thetasqr * (f32_dT - a_f32_dT) - 2. * a_f12_dn / theta - 2. * a_f32_dn) / (f12_dn + a_f12_dn + theta * (f32_dn + a_f32_dn)) / theta / mL[id_L];
+  const double dsdT_partial = (4.*a_f_12_deta + theta*(9.*a_f_12 + eta*x4 + 2.*f_32_deta + theta*(14.*a_f_32 + eta*x6 + eta*(f_32_deta + x3) + 2.*f_32 + theta*(-eta*x7 + eta*x8 + x1) + x5) + x0 + x3)) / pow(theta, 1.5); 
+  const double dsdeta_partial = sqrt(theta) * x13;
 
-  const double dPdT_partial = K3[id_L] * pow(theta,1.5) * (5. * (f32 + a_f32) + theta * (3.5 * (f52 + a_f52) + 2. * (f32_dT + a_f32_dT)) + thetasqr * (f52_dT + a_f52_dT) + 2. * a_f32_dn / theta + 2. * a_f52_dn);
-  const double dPdeta_partial = K3[id_L] * mL[id_L] * pow(theta,2.5) * (2. * (f32_dn - a_f32_dn) + theta * (f52_dn - a_f52_dn));
-
-  const double dsdT_partial = K[id_L] / mL[id_L] * pow(theta,0.5) * (- 1.5 * eta * f12 - (4.5 * a_eta - 3. / theta) * a_f12 + 2.5 * (1. - eta * theta) * f32 + (43./6. - 2.5 * a_eta * theta) * a_f32 + 10./3. * theta * (f52 + a_f52) - eta * theta * f12_dT + (10./3. - 3. * a_eta * theta) * a_f12_dT + theta * (5./3. - eta * theta) * f32_dT + theta * (13./3. - a_eta * theta) * a_f32_dT + 4./3. * thetasqr * (f52_dT + a_f52_dT) - 2. * a_eta * a_f12_dn / theta); 
-  const double dsdeta_partial = K[id_L] * pow(theta,1.5) * (- (f12 - a_f12) - theta * (f32 - a_f32) - eta * f12_dn + a_eta * a_f12_dn + (5./3. - eta * theta) * f32_dn - (5./3. - a_eta * theta) * a_f32_dn + 4./3. * theta * (f52_dn - a_f52_dn));
-  
   HelmEOSDer out;
 
-  // @TODO: optimize calculation of constants
-  out.dPdn = mL[id_L]/3. * theta * (2.*(f32_dn-a_f32_dn) + theta*(f52_dn-a_f52_dn)) / dn;
+  out.dPdn = mL[id_L] * theta * x11 * x14 / 3.; 
 
-  out.dsdn = (-f12+a_f12-eta*f12_dn+a_eta*a_f12_dn+5./3.*(f32_dn-a_f32_dn) - theta*(f32-a_f32+eta*f32_dn-a_eta*a_f32_dn-4./3.*(f52_dn-a_f52_dn))) / dn;
+  out.dsdn = x13 * x14 / theta; 
 
-  out.dPdt = dPdT_partial + dPdeta_partial * detadT;
+  out.dPdt = K3[id_L] * (dPdT_partial + dPdeta_partial * detadT);
         
-  out.dsdt = dsdT_partial + dsdeta_partial * detadT;
+  out.dsdt = K[id_L] * (dsdT_partial + dsdeta_partial * detadT) / mL[id_L];
 
   return out;
 }
