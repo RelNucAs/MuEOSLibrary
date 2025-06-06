@@ -8,8 +8,8 @@
 
 /* Function printing to file the EOS output */
 void print_EOS_output(FullEOSOutput *out, std::ostream& os) {
-  const double etot = out->e + 1.0E+39 * out->nb * MeV * out->nuEOS.Z_tot;
-  const double ptot = out->P + 1.0E+39 * out->nb * MeV * out->nuEOS.Z_tot / 3.;
+  const double etot = out->e + 1.0E+39 * out->nb * MEOS_MeV2erg * out->nuEOS.Z_tot;
+  const double ptot = out->P + 1.0E+39 * out->nb * MEOS_MeV2erg * out->nuEOS.Z_tot / 3.;
   const double stot = out->s + out->nuEOS.s_tot;
 
   os << out->rho                     << " ";  // Mass density [g/cm3]

@@ -37,6 +37,8 @@
 nu_rates
 *.o
 */.ipynb_checkpoints/*
+*.swp
+build/
 
 # Plots
 *.png

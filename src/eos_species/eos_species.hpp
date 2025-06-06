@@ -1,8 +1,11 @@
-#ifndef EOS_SPECIES_HPP
-#define EOS_SPECIES_HPP
+#ifndef MUEOSLIBRARY_SRC_EOS_SPECIES_HPP_
+#define MUEOSLIBRARY_SRC_EOS_SPECIES_HPP_
 
 #include <cstddef>
 #include <string>
+
+#include "mueosclass.hpp"
+#include "eos_species/eos_leptons.hpp"
 
 /*============================================================================*/
 
@@ -91,7 +94,10 @@ class EOS_baryons {
     /// Destructor
     ~EOS_baryons();
 
-    /// Calculate the energy density using.
+    /// Calculate full baryonic EOS using.
+    EOSstruct BaryonEOS(double n, double T, double *Y);
+
+/*     /// Calculate the energy density using.
     double BarEnergy(double n, double T, double *Y);
 
     /// Calculate the pressure using.
@@ -122,7 +128,7 @@ class EOS_baryons {
     double BardPdn(double n, double T, double *Y);
     double Bardsdn(double n, double T, double *Y);
     double BardPdT(double n, double T, double *Y);
-    double BardsdT(double n, double T, double *Y);
+    double BardsdT(double n, double T, double *Y); */
 
   public:
     /// Reads the table file.
@@ -162,19 +168,20 @@ class EOS_baryons {
   private:
     // @TODO: add action for interpolation outside the table range
     /// Low level evaluation function, not intended for outside use
-    double eval_at_nty(int vi, double n, double T, double Yq) const;
+    double eval_at_nty(int vi, double n, double T, double Yq);
     /// Low level evaluation function, not intended for outside use
-    double eval_at_lnty(int vi, double ln, double lT, double Yq) const;
+    double eval_at_lnty(int vi, double ln, double lT, double Yq);
     /// Low level evaluation function, not intended for outside use
     double eval_at_nty_new(int vi, double n, double T, double Yq) const;
+    double interp_3d(int iv) const;
 
-  public:
+  private:
     /// Evaluate interpolation weight for density
-    void weight_idx_ln(double *w0, double *w1, int *in, double log_n) const;
+    void weight_idx_ln(double log_n);
     /// Evaluate interpolation weight for composition
-    void weight_idx_yq(double *w0, double *w1, int *iy, double yq) const;
+    void weight_idx_yq(double yq);
     /// Evaluate interpolation weight for temperature
-    void weight_idx_lt(double *w0, double *w1, int *it, double log_t) const;
+    void weight_idx_lt(double log_t);
 
   public:
     // Inverse of table spacing
@@ -193,10 +200,55 @@ class EOS_baryons {
 
   private:
     double m_bar;
+    int in, iy, it;
+    double wn0, wn1, wy0, wy1, wt0, wt1;
 
     bool m_initialized;
 };
 
 /*============================================================================*/
 
-#endif //EOS_SPECIES_HPP
+class MuEOSClass : public EOS_baryons, public EOS_leptons<0>, public EOS_leptons<1>, public EOS_photons, public EOS_neutrinos {
+
+    public:
+    /// Constructor
+    MuEOSClass(const int id_eos, const bool mu_flag, std::string BarTableName);
+
+    /// Destructor
+    ~MuEOSClass();
+
+/*     /// Calculate the energy density using.
+    double Energy(double n, double T, double *Y);
+
+    /// Calculate the pressure using.
+    double Pressure(double n, double T, double *Y);
+
+    /// Calculate the entropy per baryon using.
+    double Entropy(double n, double T, double *Y);
+
+    /// Calculate the enthalpy per baryon using.
+    double Enthalpy(double n, double T, double *Y); 
+    
+    /// Calculate the sound speed using.
+    double SoundSpeed(double n, double T, double *Y);
+
+     /// Calculate the chemical potentials using.
+    ChemPotentials GetChemicalPotentials(double n, double T, double *Y);
+
+    /// Calculate the particle fractions using.
+    ParticleFractions GetParticleFractions(double n, double T, double *Y);
+
+    /// Calculate the fractions of baryons using.
+    ParticleFractions BaryonFractions(double n, double T, double *Y); */
+
+    /// Calculate the neutrino particle fractions using.
+    ParticleFractions NeutrinoFractions(double n, double T, double *Y, ChemPotentials *chem_pot);
+
+    /// Calculate the neutrino EOS quantities using.
+    NeutrinoEOSOutput compute_neutrino_EOS(double n, double T, double *Y, double chem_pot[4]);
+
+    /// Calculate the full EOS output using.
+    EOSstruct compute_full_EOS(double n, double T, double *Y);
+};
+
+#endif // MUEOSLIBRARY_SRC_EOS_SPECIES_HPP_

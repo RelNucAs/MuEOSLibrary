@@ -1,8 +1,23 @@
-#ifndef EOS_ASSEMBLED_HPP
-#define EOS_ASSEMBLED_HPP
+#ifndef MUEOSLIBRARY_SRC_MUEOSCLASS_HPP_
+#define MUEOSLIBRARY_SRC_MUEOSCLASS_HPP_
 
-#include "eos_species.hpp"
-#include "eos_leptons.hpp"
+//#ifndef REAL_TYPE
+//#define REAL_TYPE double
+//#define REAL_TYPE_IS_DOUBLE
+//#warning "REAL_TYPE for MuEOSLibrary has been set to double (default)."
+//#endif
+
+//typedef REAL_TYPE MEOS_REAL;
+
+#define POW0(X) ((1))
+#define POW1(X) ((X))
+#define POW2(X) ((X) * (X))
+#define POW3(X) ((X) * (X) * (X))
+#define POW4(X) ((X) * (X) * (X) * (X))
+#define POW5(X) ((X) * (X) * (X) * (X) * (X))
+#define POW6(X) ((X) * (X) * (X) * (X) * (X) * (X))
+#define POW7(X) ((X) * (X) * (X) * (X) * (X) * (X) * (X))
+
 
 /*============================================================================*/
 
@@ -37,7 +52,8 @@ struct ParticleFractions {
 typedef struct ParticleFractions ParticleFractions;
 
 struct NeutrinoEOSOutput {
-  ParticleFractions Y_nu;
+  double Y_nu[5];
+  double chem_pot[2];
   double Z_nue;
   double Z_anue;
   double Z_num;
@@ -68,47 +84,19 @@ struct FullEOSOutput {
 };
 typedef struct FullEOSOutput FullEOSOutput;
 
-class EOS_assembled : public EOS_baryons, public EOS_leptons<0>, public EOS_leptons<1>, public EOS_photons, public EOS_neutrinos {
-
-    public:
-    /// Constructor
-    EOS_assembled(const int id_eos, const bool el_flag, const bool mu_flag, std::string BarTableName);
-
-    /// Destructor
-    //~EOS_assembled();
-
-    /// Calculate the energy density using.
-    double Energy(double n, double T, double *Y);
-
-    /// Calculate the pressure using.
-    double Pressure(double n, double T, double *Y);
-
-    /// Calculate the entropy per baryon using.
-    double Entropy(double n, double T, double *Y);
-
-    /// Calculate the enthalpy per baryon using.
-    double Enthalpy(double n, double T, double *Y);
-    
-    /// Calculate the sound speed using.
-    double SoundSpeed(double n, double T, double *Y);
-
-    /// Calculate the chemical potentials using.
-    ChemPotentials GetChemicalPotentials(double n, double T, double *Y);
-
-    /// Calculate the particle fractions using.
-    ParticleFractions GetParticleFractions(double n, double T, double *Y);
-
-    /// Calculate the fractions of baryons using.
-    ParticleFractions BaryonFractions(double n, double T, double *Y);
-
-    /// Calculate the neutrino particle fractions using.
-    ParticleFractions NeutrinoFractions(double n, double T, double *Y, ChemPotentials *chem_pot);
-
-    /// Calculate the neutrino EOS quantities using.
-    NeutrinoEOSOutput compute_neutrino_EOS(double n, double T, double *Y);
-
-    /// Calculate the full EOS output using.
-    FullEOSOutput compute_full_EOS(double n, double T, double *Y);
+struct EOSstruct {
+//  double rho;                // Mass density [g/cm3]
+//  double T;                  // Temperature [MeV]
+  double mb;                 // Baryon mass [MeV]
+  double e;                  // Internal energy density [erg/cm3]
+  double P;                  // Pressure [erg/cm3]
+  double s;                  // Entropy per baryon [#/baryon]
+  double chem_pot[4];        // Relativistic chemical potentials [MeV]
+  double comp[8];            // Particle fractions [#/baryons]
+  double eos_der[4];         // EOS derivatives
+  double cs2;                // Sound speed squared
+  NeutrinoEOSOutput nuEOS;   // Neutrino EOS quantities
 };
+typedef struct EOSstruct EOSstruct;
 
-#endif //EOS_ASSEMBLED_HPP
+#endif // MUEOSLIBRARY_SRC_MUEOSCLASS_HPP_

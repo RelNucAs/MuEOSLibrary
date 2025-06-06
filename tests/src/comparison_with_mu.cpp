@@ -90,7 +90,7 @@ void print_pressure_spec(EOS_assembled* eos, double nb, double temp, double *Y, 
     
     double Ptot = 0.;
     for (int i=0; i<10; i++) {
-        tmp[i] = 1.0E+39 * MeV * tmp[i]; // convert from MeV/fm3 to erg/cm3
+        tmp[i] = 1.0E+39 * MEOS_MeV2erg * tmp[i]; // convert from MeV/fm3 to erg/cm3
         Ptot += tmp[i];
     }
 
@@ -201,7 +201,7 @@ void compare_EOS_single(EOS_assembled* eos, std::vector<std::array<double,n_var>
     // Compute EOS
     FullEOSOutput eos_out = compute_EOS_nu_thres(eos, nb, T, Y);
 
-    const double ptot = eos_out.P + 1.0E+39 * nb * MeV * eos_out.nuEOS.Z_tot / 3.;
+    const double ptot = eos_out.P + 1.0E+39 * nb * MEOS_MeV2erg * eos_out.nuEOS.Z_tot / 3.;
     const double stot = eos_out.s + eos_out.nuEOS.s_tot;
 
     std::array<double,11> tmp; // array to store relative difference values

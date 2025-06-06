@@ -1,10 +1,10 @@
 #include <iomanip>
 
-#include "src/eos_species/eos_assembled.hpp"
+#include "eos_species/eos_species.hpp"
 
 int main() {
   /* Boolean variable for including muons */
-  const bool with_mu = true;
+  const bool with_mu = false;
 
   /* Name of baryon EOS table */
   std::string BarTableName = "DD2_bar.h5";  // baryon table
@@ -15,10 +15,9 @@ int main() {
 
   Inputs:
    - id_EOS: method for EOS computation (1: interpolation, 2: on-the-fly)
-   - el_flag: flag for activating electrons
    - mu_flag: flag for activating muons
    - BarTableName: path of baryon EOS table  */
-  EOS_assembled eos(2, true, with_mu, BarTableName);
+  MuEOSClass eos(0, with_mu, BarTableName);
 
   /* Print header */
   std::cout << std::endl;
@@ -34,11 +33,13 @@ int main() {
 
   
   /* Define input quantities */
-  double nb = 1.20226528E-05;  // Baryon number density [fm-3]
-  double T  = 6.30957362E+00;	 // Temperature [MeV]
-  double Ye = 7.00000003E-02;  // Electron fraction [#/baryons]
-  double Ym = 1.00000000E-02;  // Muon fraction [#/baryons] (not needed when "with_mu == false")
+  double nb = 4. * 0.16; //1.20226528E-05;  // Baryon number density [fm-3]
+  double T  = 5.0; //6.30957362E+00;	 // Temperature [MeV]
+  double Ye = 0.1; //7.00000003E-02;  // Electron fraction [#/baryons]
+  double Ym = 1.0e-08; //1.00000000E-02;  // Muon fraction [#/baryons] (not needed when "with_mu == false")
   double Y[2] = {Ye, Ym};
+  
+  if (!with_mu) Y[1] = 0.;
   
   /* Print input quantities to standard output */
   std::cout << std::scientific << std::setprecision(8);
@@ -50,7 +51,7 @@ int main() {
   std::cout << std::endl;
 
   /* Compute EOS Output */
-  FullEOSOutput out = eos.compute_full_EOS(nb, T, Y);
+  EOSstruct out = eos.compute_full_EOS(nb, T, Y);
 
   /*
   FullEOSOutput structure description:
@@ -100,41 +101,42 @@ int main() {
   */
 
   /* Add contribution of neutrinos */
-  const double etot = out.e + 1.0E+39 * nb * MeV * out.nuEOS.Z_tot;  // Internal energy density [erg/cm3]
-  const double ptot = out.P + 1.0E+39 * nb * MeV * out.nuEOS.Z_tot / 3.;  // Pressure [erg/cm3]
+  const double etot = out.e + 1.0E+39 * nb * MEOS_MeV2erg * out.nuEOS.Z_tot;  // Internal energy density [erg/cm3]
+  const double ptot = out.P + 1.0E+39 * nb * MEOS_MeV2erg * out.nuEOS.Z_tot / 3.;  // Pressure [erg/cm3]
   const double stot = out.s + out.nuEOS.s_tot;  // Entropy per baryon [#/baryon]
 
   /* Print EOS output to standard output */
   std::cout << "Output quantities: " << std::endl;
-  std::cout << "d            = " << out.rho                    << " " << "g/cm3"      << std::endl;	
-  std::cout << "yle          = " << out.Y_part.yle             << " " << "#/baryon"   << std::endl;	
-  std::cout << "ylm          = " << out.Y_part.ylm             << " " << "#/baryon"   << std::endl;	
+  //std::cout << "d            = " << out.rho                    << " " << "g/cm3"      << std::endl;	
+ //std::cout << "yle          = " << out.Y_part.yle             << " " << "#/baryon"   << std::endl;	
+  //std::cout << "ylm          = " << out.Y_part.ylm             << " " << "#/baryon"   << std::endl;	
   std::cout << "u            = " << etot                       << " " << "erg/cm3"    << std::endl;	
-  std::cout << "nb           = " << 1.0E+39 * nb               << " " << "1/cm3"      << std::endl;	
-  std::cout << "T            = " << out.T                      << " " << "MeV"        << std::endl;	
-  std::cout << "Ye           = " << out.Y_part.ye              << " " << "#/baryon"   << std::endl;	
-  std::cout << "Ym           = " << out.Y_part.ym              << " " << "#/baryon"   << std::endl;	
+  //std::cout << "nb           = " << 1.0E+39 * nb               << " " << "1/cm3"      << std::endl;	
+  //std::cout << "T            = " << out.T                      << " " << "MeV"        << std::endl;	
+  std::cout << "Ye           = " << out.comp[4]              << " " << "#/baryon"   << std::endl;	
+  std::cout << "Ym           = " << out.comp[5]              << " " << "#/baryon"   << std::endl;	
   std::cout << "e            = " << out.e                      << " " << "erg/cm3"    << std::endl;
   std::cout << "P            = " << ptot                       << " " << "erg/cm3"    << std::endl;
   std::cout << "s            = " << stot                       << " " << "#/baryon"   << std::endl;
-  std::cout << "Yh           = " << out.Y_part.yh              << " " << "#/baryon"   << std::endl;
-  std::cout << "Ya           = " << out.Y_part.ya              << " " << "#/baryon"   << std::endl;
-  std::cout << "Yp           = " << out.Y_part.yp              << " " << "#/baryon"   << std::endl;
-  std::cout << "Yn           = " << out.Y_part.yn              << " " << "#/baryon"   << std::endl;
-  std::cout << "Ynue         = " << out.Y_part.ynue            << " " << "#/baryon"   << std::endl;
-  std::cout << "Yanue        = " << out.Y_part.yanue           << " " << "#/baryon"   << std::endl;
-  std::cout << "Ynum         = " << out.Y_part.ynum            << " " << "#/baryon"   << std::endl;
-  std::cout << "Yanum        = " << out.Y_part.yanum           << " " << "#/baryon"   << std::endl;
-  std::cout << "Ynux         = " << out.Y_part.ynux            << " " << "#/baryon"   << std::endl;
+  std::cout << "Yh           = " << out.comp[1]              << " " << "#/baryon"   << std::endl;
+  std::cout << "Ya           = " << out.comp[0]              << " " << "#/baryon"   << std::endl;
+  std::cout << "Yp           = " << out.comp[3]              << " " << "#/baryon"   << std::endl;
+  std::cout << "Yn           = " << out.comp[2]              << " " << "#/baryon"   << std::endl;
+  std::cout << "Ynue         = " << out.nuEOS.Y_nu[0]         << " " << "#/baryon"   << std::endl;
+  std::cout << "Yanue        = " << out.nuEOS.Y_nu[1]          << " " << "#/baryon"   << std::endl;
+  std::cout << "Ynum         = " << out.nuEOS.Y_nu[2]           << " " << "#/baryon"   << std::endl;
+  std::cout << "Yanum        = " << out.nuEOS.Y_nu[3]          << " " << "#/baryon"   << std::endl;
+  std::cout << "Ynux         = " << out.nuEOS.Y_nu[4]            << " " << "#/baryon"   << std::endl;
   std::cout << "Znue         = " << out.nuEOS.Z_nue            << " " << "MeV/baryon" << std::endl;
   std::cout << "Zanue        = " << out.nuEOS.Z_anue           << " " << "MeV/baryon" << std::endl;
   std::cout << "Znum         = " << out.nuEOS.Z_num            << " " << "MeV/baryon" << std::endl;
   std::cout << "Zanum        = " << out.nuEOS.Z_anum           << " " << "MeV/baryon" << std::endl;
   std::cout << "Znux         = " << out.nuEOS.Z_nux            << " " << "MeV/baryon" << std::endl;
-  std::cout << "mup (wrt mn) = " << out.chem_pot.mu_p - out.mb << " " << "MeV"        << std::endl;
-  std::cout << "mun (wrt mn) = " << out.chem_pot.mu_n - out.mb << " " << "MeV"        << std::endl;
-  std::cout << "mue (w me)   = " << out.chem_pot.mu_e          << " " << "MeV"        << std::endl;
-  std::cout << "mum (w mm)   = " << out.chem_pot.mu_m          << " " << "MeV"        << std::endl;
-	
+  std::cout << "mup (wrt mn) = " << out.chem_pot[0] - out.mb << " " << "MeV"        << std::endl;
+  std::cout << "mun (wrt mn) = " << out.chem_pot[1] - out.mb << " " << "MeV"        << std::endl;
+  std::cout << "mue (w me)   = " << out.chem_pot[2]          << " " << "MeV"        << std::endl;
+  std::cout << "mum (w mm)   = " << out.chem_pot[3]          << " " << "MeV"        << std::endl;
+
+  //EOS_leptons<0>::LepNumberDensity<1>(nb, T, Ye);
   return 0;
 }

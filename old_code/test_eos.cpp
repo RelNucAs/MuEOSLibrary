@@ -64,7 +64,7 @@ void test_lep_eos(const double nLep, const double temp) {
 	std::array<double,9> eos_1, eos_2, eos_3;
 
 	if constexpr(species == 1) {
-		mLep = me;
+		mLep = MEOS_me;
 	} else if constexpr(species == 2) {
 		mLep = mmu;
 	}

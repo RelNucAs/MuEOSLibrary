@@ -2,10 +2,10 @@
 #include <array>
 #include <sstream>
 
-#include "helmholtz_eos.hpp"
-#include "../constants.hpp"
-#include "../fermi_integrals/fermi_integrals.hpp"
-#include "../num_tools/root_finding/root_finding.hpp"
+#include "helmholtz_eos/helmholtz_eos.hpp"
+#include "constants.hpp"
+#include "fermi_integrals/fermi_integrals.hpp"
+#include "num_tools/root_finding/root_finding.hpp"
 
 const double fivethirds = 5./3.;
 const double fourthirds = 4./3.;
@@ -132,6 +132,67 @@ HelmEOSDer der_cs2(double nLep, double temp, const int id_L) {
   return out;
 }
 
+HelmEOSDer der_cs2_from_eta(double eta, double temp, const int id_L) {
+  // Define theta (relativity parameter)
+  const double theta = temp / mL[id_L];
+  const double thetasqr = theta * theta;
+
+  GFDs FD_integ;
+
+  // Compute missing Generalized Fermi-Dirac integrals
+  const double f_12 = compute_res(eta, theta, 0.5); // k = 1/2
+  const double f_32 = compute_res(eta, theta, 1.5); // k = 3/2
+  const double f_52 = compute_res(eta, theta, 2.5); // k = 5/2
+ 
+  const double f_12_deta = compute_res_ed(eta, theta, 0.5);
+  const double f_32_deta = compute_res_ed(eta, theta, 1.5);
+
+  // Degeneracy parameter of anti-leptons
+  const double a_eta = - (eta + 2. / theta);
+
+  const double a_f_12 = compute_res(a_eta, theta, 0.5); // k = 1/2
+  const double a_f_32 = compute_res(a_eta, theta, 1.5); // k = 3/2
+  const double a_f_52 = compute_res(a_eta, theta, 2.5); // k = 5/2
+
+  const double a_f_12_deta = compute_res_ed(a_eta, theta, 0.5);
+  const double a_f_32_deta = compute_res_ed(a_eta, theta, 1.5);
+
+  const double x0 = 2.*a_f_32_deta;
+  const double x1 = 4.*a_f_52 + 4.*f_52;
+  const double x2 = 3.*f_12;
+  const double x3 = -x2;
+  const double x4 = 2.*a_f_12_deta;
+  const double x5 = a_f_32_deta*eta;
+  const double x6 = 3.*a_f_12;
+  const double x7 = 3.*f_32;
+  const double x8 = 3.*a_f_32;
+  const double x9 = x7 - x8;
+  const double x10 = x2 - x6;
+  const double x11 = theta*x9 + x10;
+  const double x12 = -a_f_32_deta - f_32_deta;
+  const double x13 = theta*(-a_f_12_deta*eta - eta*f_12_deta + theta*(-eta*f_32_deta - x5 + x9) + x10 + x12) - x4;
+  const double x14 = 1./(a_f_12_deta + f_12_deta + theta*(a_f_32_deta + f_32_deta));
+
+  const double detadT = x14*(-theta*(x11 + x12) + x4) / (theta * theta); 
+
+  const double dPdT_partial = sqrt(theta) * (6.*a_f_12 + theta*(11.*a_f_32 + 5.*f_32 + theta*x1) - x0); 
+  const double dPdeta_partial = pow(theta, 2.5) * x11; 
+
+  const double dsdT_partial = (4.*a_f_12_deta + theta*(9.*a_f_12 + eta*x4 + 2.*f_32_deta + theta*(14.*a_f_32 + eta*x6 + eta*(f_32_deta + x3) + 2.*f_32 + theta*(-eta*x7 + eta*x8 + x1) + x5) + x0 + x3)) / pow(theta, 1.5); 
+  const double dsdeta_partial = sqrt(theta) * x13;
+
+  HelmEOSDer out;
+
+  out.dPdn = mL[id_L] * theta * x11 * x14 / 3.; 
+
+  out.dsdn = x13 * x14 / theta; 
+
+  out.dPdt = K3[id_L] * (dPdT_partial + dPdeta_partial * detadT);
+        
+  out.dsdt = K[id_L] * (dsdT_partial + dsdeta_partial * detadT) / mL[id_L];
+
+  return out;
+}
 
 HelmEOSDer der_cs2_num(double nLep, double temp, double id_L) {
   GFDs FD_integ;
