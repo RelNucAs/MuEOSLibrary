@@ -5,8 +5,8 @@
 #include <array>
 #include <cmath>
 
-#include "../constants.hpp"
-#include "../fermi_integrals/fermi_integrals.hpp"
+#include "constants.hpp"
+#include "fermi_integrals/fermi_integrals.hpp"
 
 enum EOSQuantities {
 	IL_N  = 0, //! Number density of leptons

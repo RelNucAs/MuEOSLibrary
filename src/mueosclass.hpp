@@ -9,6 +9,22 @@
 
 //typedef REAL_TYPE MEOS_REAL;
 
+#ifndef id_test
+#define id_test 0
+#endif
+
+#ifndef MY_MACRO_PRINTED
+#define MY_MACRO_PRINTED
+
+// Stringify helper macros
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+
+#pragma message("id_eos for MuEOSLibrary has been set to " TOSTRING(id_test))
+
+#endif // MY_MACRO_PRINTED
+
+
 #define POW0(X) ((1))
 #define POW1(X) ((X))
 #define POW2(X) ((X) * (X))

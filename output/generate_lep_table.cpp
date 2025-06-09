@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <iomanip>
 
-#include "../src/helmholtz_eos/helmholtz_eos.hpp"
+#include "helmholtz_eos/helmholtz_eos.hpp"
 
 const double amu_g = 1.66054e-24;
 

@@ -106,7 +106,8 @@ class EOS_leptons {
       } else if constexpr(id_EOS == 1) {
         assert(m_lep_initialized);
         
-        const double eta = eval_lep_at_nty(0, n, T, Y);
+        const double eta = eval_lep_at_nty(0, n, T, Y[idx_lep]);
+
         const double theta = T / mL[idx_lep];
         const double a_eta = - (eta + 2. / theta);
 
@@ -146,11 +147,13 @@ class EOS_leptons {
         eos_out.e = tmp.el + tmp.a_el;
         eos_out.P = tmp.pl + tmp.a_pl;
         eos_out.s = tmp.sl + tmp.a_sl;
-        eos_out.chem_pot[3] = tmp.mul;
+        eos_out.chem_pot[2+idx_lep] = tmp.mul;
         eos_out.eos_der[0] = tmp_der.dPdn * Y[idx_lep];
         eos_out.eos_der[1] = tmp_der.dsdn * Y[idx_lep] / n - eos_out.s / (n*n);
         eos_out.eos_der[2] = tmp_der.dPdt;
         eos_out.eos_der[3] = tmp_der.dsdt / n;
+
+        return eos_out;
       }
     }
 
@@ -546,7 +549,8 @@ class EOS_leptons {
           for (int it = 0; it < m_ntl; ++it) {
             s5 >> number;
             m_lep_table[lep_index(0, in, it)] = number;
-      }}
+        }
+      }
     
       // Cleanup
       // -------------------------------------------------------------------------
@@ -588,7 +592,7 @@ class EOS_leptons {
 
   private:
     /// Low level evaluation function, not intended for outside use
-    double eval_lep_at_nty(int vi, double n, double T, double Yl) const {
+    double eval_lep_at_nty(int vi, double n, double T, double Yl) {
       // @FIXME
       if (Yl == 0.) return 0.;
       return eval_lep_at_lnty(vi, log(n*Yl), log(T));

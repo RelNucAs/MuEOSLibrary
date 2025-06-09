@@ -17,7 +17,7 @@ int main() {
    - id_EOS: method for EOS computation (1: interpolation, 2: on-the-fly)
    - mu_flag: flag for activating muons
    - BarTableName: path of baryon EOS table  */
-  MuEOSClass eos(0, with_mu, BarTableName);
+  MuEOSClass eos(id_test, with_mu, BarTableName);
 
   /* Print header */
   std::cout << std::endl;

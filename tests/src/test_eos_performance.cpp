@@ -5,7 +5,7 @@
 #include <cmath>
 #include <chrono>
 
-#include "../../src/eos_species/eos_assembled.hpp"
+#include "eos_species/eos_assembled.hpp"
 
 using namespace std::chrono;
 

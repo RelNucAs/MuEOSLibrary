@@ -14,8 +14,8 @@
 std::string EFullTableName = "eos_table/electrons/eos_electrons_table.txt"; // electron full table
 std::string MFullTableName = "eos_table/muons/eos_muons_table.txt"; // muon full table
 
-std::string EEtaTableName = "eos_table/electrons/eos_electrons_eta.txt"; // electron full table
-std::string MEtaTableName = "eos_table/muons/eos_muons_eta.txt"; // muon full table
+std::string EEtaTableName = "eos_table/electrons/eos_electrons_eta.txt"; // electron eta table
+std::string MEtaTableName = "eos_table/muons/eos_muons_eta.txt"; // muon eta table
 
 /*
   Inputs:
@@ -215,7 +215,7 @@ EOSstruct MuEOSClass::compute_full_EOS(double n, double T, double *Y) {
   if (EOS_leptons<1>::m_lep_active == true) {
     eos_tot.comp[5] = Y[1];
   } else {
-    eos_tot.comp[5] = 0;
+    eos_tot.comp[5] = 0.;
   }
 
   eos_tot.e = eos_bar.e + eos_lep_0.e + eos_lep_1.e + RadEnergy(T);
@@ -234,10 +234,12 @@ EOSstruct MuEOSClass::compute_full_EOS(double n, double T, double *Y) {
 
   eos_tot.cs2 = sqrt(std::max(1.e-6,(dPdn - dsdn/dsdt*dPdt) / enthalpy));
   
+  eos_tot.mb = eos_bar.mb;
+  
   eos_tot.chem_pot[0] = eos_bar.chem_pot[0];
   eos_tot.chem_pot[1] = eos_bar.chem_pot[1];
   eos_tot.chem_pot[2] = eos_lep_0.chem_pot[2];
-  eos_tot.chem_pot[3] = eos_lep_0.chem_pot[3];
+  eos_tot.chem_pot[3] = eos_lep_1.chem_pot[3];
 
   eos_tot.comp[0] = eos_bar.comp[0];
   eos_tot.comp[1] = eos_bar.comp[1];

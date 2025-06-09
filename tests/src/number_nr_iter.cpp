@@ -4,8 +4,8 @@
 #include <array>
 #include <cmath>
 
-#include "../../src/eos_species/eos_assembled.hpp"
-#include "../../src/num_tools/root_finding/root_finding.hpp"
+#include "eos_species/eos_species.hpp"
+#include "num_tools/root_finding/root_finding.hpp"
 
 int main () {
   const double nb_min[2] = {1.0000000e-12, 1.00e-12}; // {5.0e+03/amu_g*1.e-39, ...}

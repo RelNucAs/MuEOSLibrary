@@ -51,6 +51,8 @@ EOSstruct EOS_baryons::BaryonEOS(double n, double T, double *Y) {
   weight_idx_yq(Y[0] + Y[1]);
   weight_idx_lt(log(T));
 
+  eos_out.mb = m_bar;
+  
   eos_out.e = exp(interp_3d(BLOGE));
   eos_out.P = exp(interp_3d(BLOGP)) - Pmin;
   eos_out.s = interp_3d(BENT);
