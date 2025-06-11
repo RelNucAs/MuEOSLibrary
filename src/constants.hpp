@@ -21,6 +21,7 @@ constexpr double MEOS_hc3  = 1.905895196929953e+9;  // (h*c)**3 [MeV3 fm3]
 constexpr double MEOS_fourpi_hc3 = 6.593421629164755e-09; // (4*pi)/(h*c)**3 [MeV-3 fm-3]
 constexpr double MEOS_GF   = 8.957e-44;          // MeV*cm^3
 constexpr double MEOS_pi   = 3.141592653589793;  // pi constant
+constexpr double MEOS_pi_sq = 9.869604401089358;  // MEOS_pi**2.
 constexpr double MEOS_kB   = 8.617333262145e-11; // Boltzmann constant [MeV K-1]
 constexpr double MEOS_mb   = 1.674e-24;          // reference baryonic mass [g]
 constexpr double MEOS_mu   = 1.66054e-24;        // atomic mass unit [g]

@@ -42,99 +42,82 @@ EOS_baryons::~EOS_baryons() {
   }
 }
 
-EOSstruct EOS_baryons::BaryonEOS(double n, double T, double *Y) {
+void EOS_baryons::BaryonEOS(double n, double T, double *Y) {
   assert (m_initialized);
-
-  EOSstruct eos_out = {0};
 
   weight_idx_ln(log(n));
   weight_idx_yq(Y[0] + Y[1]);
   weight_idx_lt(log(T));
 
-  eos_out.mb = m_bar;
-  
-  eos_out.e = exp(interp_3d(BLOGE));
-  eos_out.P = exp(interp_3d(BLOGP)) - Pmin;
-  eos_out.s = interp_3d(BENT);
-  eos_out.chem_pot[0] = interp_3d(BMUB) + interp_3d(BMUQ);
-  eos_out.chem_pot[1] = interp_3d(BMUB);
-  eos_out.comp[0] = interp_3d(BYALP);
-  eos_out.comp[1] = interp_3d(BYNUC);
-  eos_out.comp[2] = interp_3d(BYNTR);
-  eos_out.comp[3] = interp_3d(BYPTN);
-  eos_out.eos_der[0] = interp_3d(BDPDN);
-  eos_out.eos_der[1] = interp_3d(BDSDN);
-  eos_out.eos_der[2] = interp_3d(BDPDT);
-  eos_out.eos_der[3] = interp_3d(BDSDT);
+ 
+  e_bar = exp(interp_3d(BLOGE));
+  P_bar = exp(interp_3d(BLOGP)) - Pmin;
+  s_bar = interp_3d(BENT);
+  mu_bar[0] = interp_3d(BMUB) + interp_3d(BMUQ);
+  mu_bar[1] = interp_3d(BMUB);
+  Y_comp[0] = interp_3d(BYALP);
+  Y_comp[1] = interp_3d(BYNUC);
+  Y_comp[2] = interp_3d(BYNTR);
+  Y_comp[3] = interp_3d(BYPTN);
+  der_bar[0] = interp_3d(BDPDN);
+  der_bar[1] = interp_3d(BDSDN);
+  der_bar[2] = interp_3d(BDPDT);
+  der_bar[3] = interp_3d(BDSDT);
 
-  return eos_out;
+  return;
 }
 
-/* double EOS_baryons::BarEnergy(double n, double T, double *Y) {
-  assert (m_initialized);
-  return exp(eval_at_nty(BLOGE, n, T, Y[0]+Y[1]));
+double EOS_baryons::GetBaryonEnergy() {
+  return e_bar;
 }
 
-double EOS_baryons::BarPressure(double n, double T, double *Y) {
-  assert (m_initialized);
-  return exp(eval_at_nty(BLOGP, n, T, Y[0]+Y[1])) - Pmin;
+double EOS_baryons::GetBaryonPressure() {
+  return P_bar;
 }
 
-double EOS_baryons::BarEntropy(double n, double T, double *Y) {
-  assert (m_initialized);
-  return eval_at_nty(BENT, n, T, Y[0]+Y[1]);
+double EOS_baryons::GetBaryonEntropy() {
+  return s_bar;
 }
 
-double EOS_baryons::ProtonChemicalPotential(double n, double T, double *Y) {
-  assert (m_initialized);
-  return eval_at_nty(BMUB, n, T, Y[0]+Y[1]) + eval_at_nty(BMUQ, n, T, Y[0]+Y[1]);
+double EOS_baryons::GetProtonChemicalPotential() {
+  return mu_bar[0];
 }
 
-double EOS_baryons::NeutronChemicalPotential(double n, double T, double *Y) {
-  assert (m_initialized);
-  return eval_at_nty(BMUB, n, T, Y[0]+Y[1]);
+double EOS_baryons::GetNeutronChemicalPotential() {
+  return mu_bar[1];
 }
 
-double EOS_baryons::AlphaFraction(double n, double T, double *Y) {
-  assert (m_initialized);
-  return eval_at_nty(BYALP, n, T, Y[0]+Y[1]);
+double EOS_baryons::GetAlphaFraction() {
+  return Y_comp[0];
 }
 
-double EOS_baryons::HeavyFraction(double n, double T, double *Y) {
-  assert (m_initialized);
-  return eval_at_nty(BYNUC, n, T, Y[0]+Y[1]);
+double EOS_baryons::GetHeavyFraction() {
+  return Y_comp[1];
 }
 
-double EOS_baryons::NeutronFraction(double n, double T, double *Y) {
-  assert (m_initialized);
-  return eval_at_nty(BYNTR, n, T, Y[0]+Y[1]);
+double EOS_baryons::GetNeutronFraction() {
+  return Y_comp[2];
 }
 
-double EOS_baryons::ProtonFraction(double n, double T, double *Y) {
-  assert (m_initialized);
-  return eval_at_nty(BYPTN, n, T, Y[0]+Y[1]);
+double EOS_baryons::GetProtonFraction() {
+  return Y_comp[3];
 }
 
-double EOS_baryons::BardPdn(double n, double T, double *Y) {
-  assert (m_initialized);
-  return eval_at_nty(BDPDN, n, T, Y[0]+Y[1]);
+double EOS_baryons::GetBaryondPdn() {
+  return der_bar[0];
 }
 
-double EOS_baryons::Bardsdn(double n, double T, double *Y) {
-  assert (m_initialized);
-  return eval_at_nty(BDSDN, n, T, Y[0]+Y[1]);
+double EOS_baryons::GetBaryondsdn() {
+  return der_bar[1];
 }
 
-double EOS_baryons::BardPdT(double n, double T, double *Y) {
-  assert (m_initialized);
-  return eval_at_nty(BDPDT, n, T, Y[0]+Y[1]);
+double EOS_baryons::GetBaryondPdT() {
+  return der_bar[2];
 }
 
-double EOS_baryons::BardsdT(double n, double T, double *Y) {
-  assert (m_initialized);
-  return eval_at_nty(BDSDT, n, T, Y[0]+Y[1]);
+double EOS_baryons::GetBaryondsdT() {
+  return der_bar[3];
 }
- */
 
 void EOS_baryons::ReadBarTableFromFile(std::string fname) {
   herr_t ierr;

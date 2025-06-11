@@ -82,26 +82,35 @@ class EOS_leptons {
 
     /// Calculate the full leptonic EOS using.
     template <int id_EOS>
-    EOSstruct LeptonEOS(double n, double T, double *Y) {
-      EOSstruct eos_out = {0};
-      if (!m_lep_active) return eos_out;
+    void LeptonEOS(double n, double T, double *Y) {
+      if (!m_lep_active) {
+        n_lep = 0.;
+        e_lep = 0.;
+        P_lep = 0.;
+        s_lep = 0.;
+        mu_lep = 0.;
+        der_lep[0] = 0.;
+        der_lep[1] = 0.;
+        der_lep[2] = 0.;
+        der_lep[3] = 0.;
+        return;
+       }
 
       if constexpr(id_EOS == 0) {
         assert(m_lep_initialized);
         weight_idx_lnl(log(n * Y[idx_lep]));
         weight_idx_ltl(log(T));
 
-        eos_out.comp[6 + idx_lep] = exp(interp_2d(IL_N)) / n;
-        eos_out.e = exp(interp_2d(IL_E)) + exp(interp_2d(IA_E));
-        eos_out.P = exp(interp_2d(IL_P)) + exp(interp_2d(IA_P));
-        eos_out.s = exp(interp_2d(IL_S)) + exp(interp_2d(IA_S));
-        eos_out.chem_pot[2 + idx_lep] = interp_2d(IL_MU);
-        eos_out.eos_der[0] = interp_2d(ID_DPDN) * Y[idx_lep];
-        eos_out.eos_der[1] = interp_2d(ID_DSDN) * Y[idx_lep] / n - eos_out.s / (n*n);
-        eos_out.eos_der[2] = interp_2d(ID_DPDT);
-        eos_out.eos_der[3] = interp_2d(ID_DSDT) / n;
+        n_lep = exp(interp_2d(IL_N));
+        e_lep = exp(interp_2d(IL_E)) + exp(interp_2d(IA_E));
+        P_lep = exp(interp_2d(IL_P)) + exp(interp_2d(IA_P));
+        s_lep = exp(interp_2d(IL_S)) + exp(interp_2d(IA_S));
+        mu_lep = interp_2d(IL_MU);
+        der_lep[0] = interp_2d(ID_DPDN) * Y[idx_lep];
+        der_lep[1] = interp_2d(ID_DSDN) * Y[idx_lep] / n - s_lep / (n*n);
+        der_lep[2] = interp_2d(ID_DPDT);
+        der_lep[3] = interp_2d(ID_DSDT) / n;
 
-        return eos_out;
 
       } else if constexpr(id_EOS == 1) {
         assert(m_lep_initialized);
@@ -121,20 +130,16 @@ class EOS_leptons {
         HelmEOSOutput tmp = eos_helm_from_eta(eta, T, idx_lep, &FD);
         HelmEOSDer tmp_der = der_cs2_from_eta(eta, T, idx_lep);
 
-        EOSstruct eos_out;
-
-        eos_out.comp[6 + 2 * idx_lep] = tmp.nl / n;
-        eos_out.e = tmp.el + tmp.a_el;
-        eos_out.P = tmp.pl + tmp.a_pl;
-        eos_out.s = tmp.sl + tmp.a_sl;
-        eos_out.chem_pot[2+idx_lep] = tmp.mul;
-        eos_out.eos_der[0] = tmp_der.dPdn * Y[idx_lep];
-        eos_out.eos_der[1] = tmp_der.dsdn * Y[idx_lep] / n - eos_out.s / (n*n);
-        eos_out.eos_der[2] = tmp_der.dPdt;
-        eos_out.eos_der[3] = tmp_der.dsdt / n;
-
-        return eos_out;
-        
+        n_lep = tmp.nl;
+        e_lep = tmp.el + tmp.a_el;
+        P_lep = tmp.pl + tmp.a_pl;
+        s_lep = tmp.sl + tmp.a_sl;
+        mu_lep = tmp.mul;
+        der_lep[0] = tmp_der.dPdn * Y[idx_lep];
+        der_lep[1] = tmp_der.dsdn * Y[idx_lep] / n - s_lep / (n*n);
+        der_lep[2] = tmp_der.dPdt;
+        der_lep[3] = tmp_der.dsdt / n;
+       
       } else if constexpr(id_EOS == 2) {
 
         HelmEOSOutput tmp = eos_helm_full(n*Y[idx_lep], T, idx_lep);
@@ -143,169 +148,68 @@ class EOS_leptons {
 
         HelmEOSDer tmp_der = der_cs2_from_eta(eta, T, idx_lep);
 
-        eos_out.comp[6 + 2 * idx_lep] = tmp.nl / n;
-        eos_out.e = tmp.el + tmp.a_el;
-        eos_out.P = tmp.pl + tmp.a_pl;
-        eos_out.s = tmp.sl + tmp.a_sl;
-        eos_out.chem_pot[2+idx_lep] = tmp.mul;
-        eos_out.eos_der[0] = tmp_der.dPdn * Y[idx_lep];
-        eos_out.eos_der[1] = tmp_der.dsdn * Y[idx_lep] / n - eos_out.s / (n*n);
-        eos_out.eos_der[2] = tmp_der.dPdt;
-        eos_out.eos_der[3] = tmp_der.dsdt / n;
+        n_lep = tmp.nl;
+        e_lep = tmp.el + tmp.a_el;
+        P_lep = tmp.pl + tmp.a_pl;
+        s_lep = tmp.sl + tmp.a_sl;
+        mu_lep = tmp.mul;
+        der_lep[0] = tmp_der.dPdn * Y[idx_lep];
+        der_lep[1] = tmp_der.dsdn * Y[idx_lep] / n - s_lep / (n*n);
+        der_lep[2] = tmp_der.dPdt;
+        der_lep[3] = tmp_der.dsdt / n;
 
-        return eos_out;
       }
+      return;
     }
 
-/*     /// Calculate the number density of leptons using.
-    template <int id_EOS>
-    double LepNumberDensity(double n, double T, double *Y) {
-      if (!m_lep_active) return 0;
-      
-        if constexpr(id_EOS == 0) {
-          assert(m_lep_initialized);
-          return exp(eval_lep_at_nty(IL_N, n, T, Y[idx_lep]));
-        } else if constexpr(id_EOS == 1) {
-          
-        }
-        } else if constexpr(id_EOS == 2) {
-          return eos_helm_full(n*Y[idx_lep], T, idx_lep).nl;
-        }
+// Calculate the number density of leptons using.
+    double GetLeptonNumberDensity() {
+      return n_lep;
     }
 
-     /// Calculate the number density of antileptons using.
-    template <int id_EOS>
-    double AntiLepNumberDensity(double n, double T, double *Y) {
-      if (!m_lep_active) return 0;
-      if (m_lep_active) {
-        //assert(m_lep_initialized);
-        //return exp(eval_lep_at_nty(IA_N, n, T, Y[idx_lep]));
-        return LepNumberDensity<id_EOS>(n, T, Y) - n*Y[idx_lep];
-      } else {
-        return 0.;
-      }
+    // Calculate the number density of antileptons using.
+    double GetAntiLeptonNumberDensity(double n, double* Y) {
+      return n_lep - n * Y[idx_lep];
     } 
 
     /// Calculate the internal energy density of leptons using.
-    template <int id_EOS>
-    double LepEnergy(double n, double T, double *Y) {
-      if (m_lep_active) {
-        if constexpr(id_EOS == 1) {
-            assert(m_lep_initialized);
-            return exp(eval_lep_at_nty(IL_E, n, T, Y[idx_lep])) + exp(eval_lep_at_nty(IA_E, n, T, Y[idx_lep]));
-        } else if constexpr(id_EOS == 2) {
-          return eos_helm_full(n*Y[idx_lep], T, idx_lep).el + eos_helm_full(n*Y[idx_lep], T, idx_lep).a_el; 
-        }
-      } else {
-        return 0.;
-      }
+    double GetLeptonEnergy() {
+      return e_lep;
     }
 
     /// Calculate the pressure of leptons using.
-    template <int id_EOS>
-    double LepPressure(double n, double T, double *Y) {
-      if (m_lep_active) {
-        if constexpr(id_EOS == 1) {
-            assert(m_lep_initialized);
-            return exp(eval_lep_at_nty(IL_P, n, T, Y[idx_lep])) + exp(eval_lep_at_nty(IA_P, n, T, Y[idx_lep]));
-        } else if constexpr(id_EOS == 2) {
-            return eos_helm_full(n*Y[idx_lep], T, idx_lep).pl + eos_helm_full(n*Y[idx_lep], T, idx_lep).a_pl;
-        }
-      } else {
-        return 0.;
-      }
+    double GetLeptonPressure() {
+      return P_lep;
     }
 
     /// Calculate the entropy density of leptons using.
-    template <int id_EOS>
-    double LepEntropy(double n, double T, double *Y) {
-      if (m_lep_active) {
-        if constexpr(id_EOS == 1) {
-            assert(m_lep_initialized);
-            return exp(eval_lep_at_nty(IL_S, n, T, Y[idx_lep])) + exp(eval_lep_at_nty(IA_S, n, T, Y[idx_lep]));
-        } else if constexpr(id_EOS == 2) {
-            return eos_helm_full(n*Y[idx_lep], T, idx_lep).sl + eos_helm_full(n*Y[idx_lep], T, idx_lep).a_sl;
-        }
-      } else {
-        return 0.;
-      }
+    double GetLeptonEntropy() {
+      return s_lep;
     }
 
     /// Calculate the chemical potential of leptons using.
-    template <int id_EOS>
-    double LepChemicalPotential(double n, double T, double *Y) {
-      if (m_lep_active) {
-        if constexpr(id_EOS == 1) {
-            assert(m_lep_initialized);
-            return eval_lep_at_nty(IL_MU, n, T, Y[idx_lep]);
-        } else if constexpr(id_EOS == 2) {
-            HelmEOSOutput tmp = eos_helm_full(n*Y[idx_lep], T, idx_lep);
-
-            return tmp.mul;
-        }
-      } else {
-        return 0.;
-      }
+    double GetLeptonChemicalPotential() {
+      return mu_lep;
     }
 
     /// Calculate the sound speed derivatives using.
-    template <int id_EOS>
-    double LdPdn(double n, double T, double *Y) {
-      if (m_lep_active) {
-        if constexpr(id_EOS == 1) {
-            assert(m_lep_initialized);
-            return eval_lep_at_nty(ID_DPDN, n, T, Y[idx_lep])*Y[idx_lep];
-        } else if constexpr(id_EOS == 2) {
-            return der_cs2_num(n*Y[idx_lep], T, idx_lep).dPdn * Y[idx_lep];
-	      }  
-      } else {
-	      return 0.;
-      }
+    double GetLeptondPdn() {
+      return der_lep[0];
     }
 
-    template <int id_EOS>
-    double Ldsdn(double n, double T, double *Y) {
-      if (m_lep_active) {
-        if constexpr(id_EOS == 1) {
-            assert(m_lep_initialized);
-            return eval_lep_at_nty(ID_DSDN, n, T, Y[idx_lep]) * Y[idx_lep] / n - LepEntropy<1>(n, T, Y) / (n*n);
-        } else if constexpr(id_EOS == 2) {
-            return der_cs2_num(n*Y[idx_lep], T, idx_lep).dsdn * Y[idx_lep] / n - LepEntropy<2>(n, T, Y) / (n*n);
-	      }
-      } else {
-	      return 0.;
-      }
+    double GetLeptondsdn() {
+  	      return der_lep[1];
     }
     
-    template <int id_EOS>
-    double LdPdt(double n, double T, double *Y) {
-      if (m_lep_active) {
-        if constexpr(id_EOS == 1) {
-            assert(m_lep_initialized);
-            return eval_lep_at_nty(ID_DPDT, n, T, Y[idx_lep]);
-        } else if constexpr(id_EOS == 2) {
-            return der_cs2_num(n*Y[idx_lep], T, idx_lep).dPdt;
-	      }
-      } else {
-	      return 0.;
+    double GetLeptondPdt() {
+	      return der_lep[2];
       }
-    }
     
-    template <int id_EOS>
-    double Ldsdt(double n, double T, double *Y) {
-      if (m_lep_active) {
-        if constexpr(id_EOS == 1) {
-            assert(m_lep_initialized);
-            return eval_lep_at_nty(ID_DSDT, n, T, Y[idx_lep]) / n;
-        } else if constexpr(id_EOS == 2) {
-            return der_cs2_num(n*Y[idx_lep], T, idx_lep).dsdt / n;
-	      }
-      } else {
-	      return 0.;
-      }
+    double GetLeptondsdt() {
+	      return der_lep[3];
     }
 
-    /// Calculate the full leptonic EOS using.
+/*     /// Calculate the full leptonic EOS using.
     template <int id_EOS>
     HelmEOSOutput ComputeFullLepEOS(double n, double T, double *Y) {
       HelmEOSOutput out = {0.0};
@@ -318,8 +222,8 @@ class EOS_leptons {
           return eos_helm_full(n*Y[idx_lep], T, idx_lep);
         }
       }
-    } */
- 
+    } 
+  */
 
  
   public:
@@ -669,7 +573,12 @@ class EOS_leptons {
       return out;
     }
 
-};
+private:
+  double e_lep, s_lep, P_lep;
+  double n_lep;
+  double mu_lep;
+  double der_lep[4];
 
+};
 
 #endif // MUEOSLIBRARY_SRC_EOS_LEPTONS_HPP_
