@@ -71,7 +71,8 @@ The EOS output is organized in the `EOSstruct` structure which contains the foll
    - double nuEOS.s_tot        // Total neutrino entropy per baryon [#/baryon]
 ```
 
-See `main.cpp` for an example on how to initialize the class and compute the full EOS output in a single thermodynamic point.
+See `main.cpp` for an example on how to initialize the class and compute the full EOS output in a single thermodynamic point. Compile and run this minimal
+working example via the **`main`** target of CMake.
 
 ## Generating an output table: how to
 An example of code that generates output EOS tables by combining the contributions from the different species can be found at `output/generate_global_table.cpp`. The code can be compiled and run using the **`output_table`** target of CMake. The output file is saved in the `output/data/` directory. 
