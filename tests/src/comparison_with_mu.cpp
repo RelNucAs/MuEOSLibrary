@@ -5,7 +5,7 @@
 #include <array>
 #include <cmath>
 
-#include "../../src/eos_species/eos_assembled.hpp"
+#include "eos_species/eos_species.hpp"
 
 #define n_var 22
 
@@ -24,25 +24,25 @@
 
 
 /* Function computing the EOS output */
-FullEOSOutput compute_EOS_nu_thres(EOS_assembled* eos, double nb, double T, double *Y) {
-  FullEOSOutput eos_out;
+EOSstruct compute_EOS_nu_thres(MuEOSClass* eos, double nb, double T, double *Y) {
+  EOSstruct eos_out;
 
   eos_out = eos->compute_full_EOS(nb, T, Y);
 
   const double rho = 1.0E+39 * nb * amu_g;   // use amu_g for conversion instead of CompOSE baryon
                                              // mass to be consistent with Eleonora's choice
-  eos_out.rho = rho;  // Mass density [g/cm3]
+  //eos_out.rho = rho;  // Mass density [g/cm3]
   
-  eos_out.Y_part.ynue  = exp(-de_lim/rho) * eos_out.Y_part.ynue;  // Electron neutrino fraction [#/baryon]
-  eos_out.Y_part.yanue = exp(-de_lim/rho) * eos_out.Y_part.yanue; // Electron antineutrino fraction [#/baryon]
-  eos_out.Y_part.ynum  = exp(-dx_lim/rho) * eos_out.Y_part.ynum;  // Muon neutrino fraction [#/baryon]
-  eos_out.Y_part.yanum = exp(-dx_lim/rho) * eos_out.Y_part.yanum; // Muon antineutrino fraction [#/baryon]
-  eos_out.Y_part.ynux  = exp(-dx_lim/rho) * eos_out.Y_part.ynux;  // Tau (anti)neutrino fraction [#/baryon]
+  eos_out.nuEOS.Y_nu[0] = exp(-de_lim/rho) * eos_out.nuEOS.Y_nu[0];  // Electron neutrino fraction [#/baryon]
+  eos_out.nuEOS.Y_nu[1] = exp(-de_lim/rho) * eos_out.nuEOS.Y_nu[1]; // Electron antineutrino fraction [#/baryon]
+  eos_out.nuEOS.Y_nu[2] = exp(-dx_lim/rho) * eos_out.nuEOS.Y_nu[2];  // Muon neutrino fraction [#/baryon]
+  eos_out.nuEOS.Y_nu[3] = exp(-dx_lim/rho) * eos_out.nuEOS.Y_nu[3]; // Muon antineutrino fraction [#/baryon]
+  eos_out.nuEOS.Y_nu[4] = exp(-dx_lim/rho) * eos_out.nuEOS.Y_nu[4];  // Tau (anti)neutrino fraction [#/baryon]
 
-  eos_out.Y_part.yle = eos_out.Y_part.ye + eos_out.Y_part.ynue - eos_out.Y_part.yanue; // Net electron lepton fraction [#/baryon]
-  eos_out.Y_part.ylm = eos_out.Y_part.ym + eos_out.Y_part.ynum - eos_out.Y_part.yanum; // Net muon lepton fraction [#/baryon]
+  const double yle = eos_out.comp[4] + eos_out.nuEOS.Y_nu[0] - eos_out.nuEOS.Y_nu[1]; // Net electron lepton fraction [#/baryon]
+  const double ylm = eos_out.comp[5] + eos_out.nuEOS.Y_nu[2] - eos_out.nuEOS.Y_nu[3]; // Net muon lepton fraction [#/baryon]
 
-  eos_out.nuEOS.Y_nu = eos_out.Y_part;
+  //eos_out.nuEOS.Y_nu = eos_out.Y_part;
 
   eos_out.nuEOS.Z_nue  = exp(-de_lim/rho) * eos_out.nuEOS.Z_nue;   // Electron neutrino energy per baryon [MeV/baryon]
   eos_out.nuEOS.Z_anue = exp(-de_lim/rho) * eos_out.nuEOS.Z_anue;  // Electron antineutrino energy per baryon [MeV/baryon]
@@ -74,12 +74,13 @@ double print_single_diff(std::vector<std::array<double,n_var>>* tab_in,
     return q_diff;
 }
 
-void print_pressure_spec(EOS_assembled* eos, double nb, double temp, double *Y, FullEOSOutput *eos_out, std::ostream& os) {
+void print_pressure_spec(MuEOSClass* eos, double nb, double temp, double *Y, EOSstruct *eos_out, std::ostream& os) {
     std::array<double,10> tmp;
     
-    tmp[0] = eos->BarPressure(nb, temp, Y);                     // Baryon pressure
-    tmp[1] = eos->EOS_leptons<0>::LepPressure<2>(nb, temp, Y);  // Electron pressure
-    tmp[2] = eos->EOS_leptons<1>::LepPressure<2>(nb, temp, Y);  // Muon pressure
+    // @TODO: fix this
+    //tmp[0] = eos->BarPressure(nb, temp, Y);                     // Baryon pressure
+    //tmp[1] = eos->EOS_leptons<0>::LepPressure<2>(nb, temp, Y);  // Electron pressure
+    //tmp[2] = eos->EOS_leptons<1>::LepPressure<2>(nb, temp, Y);  // Muon pressure
     tmp[3] = eos->RadPressure(temp);                            // Photon pressure
     tmp[4] = nb * eos_out->nuEOS.Z_nue  / 3.;  // Electron neutrino pressure
     tmp[5] = nb * eos_out->nuEOS.Z_anue / 3.;  // Electron antineutrino pressure
@@ -90,7 +91,7 @@ void print_pressure_spec(EOS_assembled* eos, double nb, double temp, double *Y, 
     
     double Ptot = 0.;
     for (int i=0; i<10; i++) {
-        tmp[i] = 1.0E+39 * MeV * tmp[i]; // convert from MeV/fm3 to erg/cm3
+        tmp[i] = 1.0E+39 * MEOS_MeV2erg * tmp[i]; // convert from MeV/fm3 to erg/cm3
         Ptot += tmp[i];
     }
 
@@ -113,12 +114,13 @@ void print_pressure_spec(EOS_assembled* eos, double nb, double temp, double *Y, 
 }
 
 
-void print_entropy_spec(EOS_assembled* eos, double nb, double temp, double *Y, FullEOSOutput *eos_out, std::ostream& os) {
+void print_entropy_spec(MuEOSClass* eos, double nb, double temp, double *Y, EOSstruct *eos_out, std::ostream& os) {
     std::array<double,10> tmp;
     
-    tmp[0] = eos->BarEntropy(nb, temp, Y);                          // Baryon entropy
-    tmp[1] = eos->EOS_leptons<0>::LepEntropy<2>(nb, temp, Y) / nb;  // Electron entropy
-    tmp[2] = eos->EOS_leptons<1>::LepEntropy<2>(nb, temp, Y) / nb;  // Muon entropy
+    // @TODO: fix this
+    // tmp[0] = eos->BarEntropy(nb, temp, Y);                          // Baryon entropy
+    // tmp[1] = eos->EOS_leptons<0>::LepEntropy<2>(nb, temp, Y) / nb;  // Electron entropy
+    // tmp[2] = eos->EOS_leptons<1>::LepEntropy<2>(nb, temp, Y) / nb;  // Muon entropy
     tmp[3] = eos->RadEntropy(temp) / nb;                            // Photon entropy
     tmp[4] = eos_out->nuEOS.s_nue;                                  // Electron neutrino entropy
     tmp[5] = eos_out->nuEOS.s_anue;                                 // Electron antineutrino entropy
@@ -148,7 +150,7 @@ void print_entropy_spec(EOS_assembled* eos, double nb, double temp, double *Y, F
     return;
 }
 
-bool IsValid(EOS_assembled* eos, std::vector<std::array<double,n_var>>* tab_in, const int idx_p) {
+bool IsValid(MuEOSClass* eos, std::vector<std::array<double,n_var>>* tab_in, const int idx_p) {
     double nb = (*tab_in)[idx_p][0] * 1.0E-39 / amu_g;
     double  T = (*tab_in)[idx_p][11];
     double ye = (*tab_in)[idx_p][5] - (*tab_in)[idx_p][6];
@@ -170,7 +172,7 @@ bool IsValid(EOS_assembled* eos, std::vector<std::array<double,n_var>>* tab_in, 
     return true;
 }
 
-void compare_EOS_single(EOS_assembled* eos, std::vector<std::array<double,n_var>>* tab_in, const int idx_p, const int n, std::ostream& os) {
+void compare_EOS_single(MuEOSClass* eos, std::vector<std::array<double,n_var>>* tab_in, const int idx_p, const int n, std::ostream& os) {
     double nb = (*tab_in)[idx_p][0] * 1.0E-39 / amu_g;
     double  T = (*tab_in)[idx_p][11];
     double ye = (*tab_in)[idx_p][5] - (*tab_in)[idx_p][6];
@@ -199,9 +201,9 @@ void compare_EOS_single(EOS_assembled* eos, std::vector<std::array<double,n_var>
     os << std::endl;
     
     // Compute EOS
-    FullEOSOutput eos_out = compute_EOS_nu_thres(eos, nb, T, Y);
+    EOSstruct eos_out = compute_EOS_nu_thres(eos, nb, T, Y);
 
-    const double ptot = eos_out.P + 1.0E+39 * nb * MeV * eos_out.nuEOS.Z_tot / 3.;
+    const double ptot = eos_out.P + 1.0E+39 * nb * MEOS_MeV2erg * eos_out.nuEOS.Z_tot / 3.;
     const double stot = eos_out.s + eos_out.nuEOS.s_tot;
 
     std::array<double,11> tmp; // array to store relative difference values
@@ -216,15 +218,15 @@ void compare_EOS_single(EOS_assembled* eos, std::vector<std::array<double,n_var>
     // Compare EOS against reference table
     tmp[0]  = print_single_diff(tab_in, idx_p,  9, ptot                       , "Total Pressure              ", os);
     tmp[1]  = print_single_diff(tab_in, idx_p, 10, stot                       , "Total Entropy               ", os);
-    tmp[2]  = print_single_diff(tab_in, idx_p, 12, eos_out.nuEOS.Y_nu.ynue    , "nu_e fraction               ", os);
-    tmp[3]  = print_single_diff(tab_in, idx_p, 13, eos_out.nuEOS.Y_nu.yanue   , "anu_e fraction              ", os);
-    tmp[4]  = print_single_diff(tab_in, idx_p, 14, eos_out.nuEOS.Y_nu.ynum    , "nu_mu  fraction             ", os);
-    tmp[5]  = print_single_diff(tab_in, idx_p, 15, eos_out.nuEOS.Y_nu.yanum   , "anu_mu fraction             ", os);
-    tmp[6]  = print_single_diff(tab_in, idx_p, 16, eos_out.nuEOS.Y_nu.ynux    , "nu_tau fraction             ", os);
-    tmp[7]  = print_single_diff(tab_in, idx_p, 17, eos_out.chem_pot.mu_n - m_n, "Neutrons  NR chem potential ", os);
-    tmp[8]  = print_single_diff(tab_in, idx_p, 18, eos_out.chem_pot.mu_p - m_p, "Protons   NR chem potential ", os);
-    tmp[9]  = print_single_diff(tab_in, idx_p, 19, eos_out.chem_pot.mu_e - m_e, "Electrons NR chem potential ", os);
-    tmp[10] = print_single_diff(tab_in, idx_p, 20, eos_out.chem_pot.mu_m -m_mu, "Muons     NR chem potential ", os);
+    tmp[2]  = print_single_diff(tab_in, idx_p, 12, eos_out.nuEOS.Y_nu[0]    , "nu_e fraction               ", os);
+    tmp[3]  = print_single_diff(tab_in, idx_p, 13, eos_out.nuEOS.Y_nu[1]   , "anu_e fraction              ", os);
+    tmp[4]  = print_single_diff(tab_in, idx_p, 14, eos_out.nuEOS.Y_nu[2]    , "nu_mu  fraction             ", os);
+    tmp[5]  = print_single_diff(tab_in, idx_p, 15, eos_out.nuEOS.Y_nu[3]   , "anu_mu fraction             ", os);
+    tmp[6]  = print_single_diff(tab_in, idx_p, 16, eos_out.nuEOS.Y_nu[4]    , "nu_tau fraction             ", os);
+    tmp[7]  = print_single_diff(tab_in, idx_p, 17, eos_out.chem_pot[1] - m_n, "Neutrons  NR chem potential ", os);
+    tmp[8]  = print_single_diff(tab_in, idx_p, 18, eos_out.chem_pot[0] - m_p, "Protons   NR chem potential ", os);
+    tmp[9]  = print_single_diff(tab_in, idx_p, 19, eos_out.chem_pot[2] - m_e, "Electrons NR chem potential ", os);
+    tmp[10] = print_single_diff(tab_in, idx_p, 20, eos_out.chem_pot[3] -m_mu, "Muons     NR chem potential ", os);
 
     if (tmp[0] > 1.0E-02) print_pressure_spec(eos, nb, T, Y, &eos_out, os);
     if (tmp[1] > 1.0E-02) print_entropy_spec(eos , nb, T, Y, &eos_out,  os);
@@ -258,7 +260,7 @@ void FindCornerCases(double var, double *lim, int *idx, int count) {
     return;
 }
 
-void PrintHeader(EOS_assembled* eos, std::string table_name, std::ostream& os) {
+void PrintHeader(MuEOSClass* eos, std::string table_name, std::ostream& os) {
     os << std::scientific << std::setprecision(8); // scientific format for std output
         
     os << "#####################" << std::endl;
@@ -299,7 +301,7 @@ int main () {
      - el_flag: flag for activating electrons
      - mu_flag: flag for activating muons
      - BarTableName: path of baryon EOS table  */
-    EOS_assembled eos(2, true, true, BarTableName);
+    MuEOSClass eos(id_test, true, BarTableName);
 
     /* Input stream */
     std::string ref_table = "data_DD2_ylmu_last.txt"; // initial Yl_mu = Ym_cold
@@ -383,10 +385,10 @@ int main () {
     Cout << "Check corner cases:" << std::endl;
     Cout << std::endl;
 
-    double nb_lim[2] = {+numeric_limits<double>::max(), -numeric_limits<double>::max()};
-    double  T_lim[2] = {+numeric_limits<double>::max(), -numeric_limits<double>::max()};
-    double ye_lim[2] = {+numeric_limits<double>::max(), -numeric_limits<double>::max()};
-    double ym_lim[2] = {+numeric_limits<double>::max(), -numeric_limits<double>::max()};
+    double nb_lim[2] = {+std::numeric_limits<double>::max(), -std::numeric_limits<double>::max()};
+    double  T_lim[2] = {+std::numeric_limits<double>::max(), -std::numeric_limits<double>::max()};
+    double ye_lim[2] = {+std::numeric_limits<double>::max(), -std::numeric_limits<double>::max()};
+    double ym_lim[2] = {+std::numeric_limits<double>::max(), -std::numeric_limits<double>::max()};
     
     int id_nb[2] = {0};
     int id_T[2]  = {0};

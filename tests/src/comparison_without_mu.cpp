@@ -4,36 +4,36 @@
 #include <array>
 #include <cmath>
 
-#include "../../src/eos_species/eos_assembled.hpp"
+#include "eos_species/eos_species.hpp"
 
 /* Function printing to file the EOS output */
-void print_EOS_output(FullEOSOutput *out, std::ostream& os) {
-  const double etot = out->e + 1.0E+39 * out->nb * MeV * out->nuEOS.Z_tot;
-  const double ptot = out->P + 1.0E+39 * out->nb * MeV * out->nuEOS.Z_tot / 3.;
+void print_EOS_output(const double nb, const double T, const double *Y, EOSstruct *out, std::ostream& os) {
+  const double etot = out->e + 1.0E+39 * nb * MEOS_MeV2erg * out->nuEOS.Z_tot;
+  const double ptot = out->P + 1.0E+39 * nb * MEOS_MeV2erg * out->nuEOS.Z_tot / 3.;
   const double stot = out->s + out->nuEOS.s_tot;
 
-  os << out->rho                     << " ";  // Mass density [g/cm3]
-  os << out->Y_part.yle              << " ";  // Net electron lepton fraction [#/baryon]
+  //os << out->rho                     << " ";  // Mass density [g/cm3]
+  //os << out->Y_part.yle              << " ";  // Net electron lepton fraction [#/baryon]
   os << etot                         << " ";  // Internal energy density (including neutrinos) [erg/cm3]
-  os << 1.0E+39 * out->nb            << " ";  // Number density [1/cm3]
-  os << out->T                       << " ";  // Temperature [MeV]
-  os << out->Y_part.ye               << " ";  // Electron fraction [#/baryon]
+  os << 1.0E+39 * nb            << " ";  // Number density [1/cm3]
+  os << T                       << " ";  // Temperature [MeV]
+  os << out->comp[4]               << " ";  // Electron fraction [#/baryon]
   os << out->e                       << " ";  // Internal energy density (without neutrinos) [erg/cm3]
   os << ptot                         << " ";  // Pressure (including neutrinos) [erg/cm3]
   //os << stot                         << " " << "#/baryon"   << std::endl;
-  os << out->Y_part.yh               << " ";  // Heavy nuclei fraction [#/baryon]
-  os << out->Y_part.ya               << " ";  // Alpha particle fraction [#/baryon]
-  os << out->Y_part.yp               << " ";  // Proton fraction [#/baryon]
-  os << out->Y_part.yn               << " ";  // Neutron fraction [#/baryon]
-  os << out->Y_part.ynue             << " ";  // Electron neutrino fraction [#/baryon]
-  os << out->Y_part.yanue            << " ";  // Electron antineutrino fraction [#/baryon]
-  os << out->Y_part.ynux             << " ";  // Heavy (anti)neutrino fraction [#/baryon]
+  os << out->comp[1]               << " ";  // Heavy nuclei fraction [#/baryon]
+  os << out->comp[0]               << " ";  // Alpha particle fraction [#/baryon]
+  os << out->comp[3]               << " ";  // Proton fraction [#/baryon]
+  os << out->comp[2]               << " ";  // Neutron fraction [#/baryon]
+  os << out->nuEOS.Y_nu[0]             << " ";  // Electron neutrino fraction [#/baryon]
+  os << out->nuEOS.Y_nu[1]           << " ";  // Electron antineutrino fraction [#/baryon]
+  os << out->nuEOS.Y_nu[4]             << " ";  // Heavy (anti)neutrino fraction [#/baryon]
   os << out->nuEOS.Z_nue             << " ";  // Electron neutrino energy per baryon [MeV/baryon]
   os << out->nuEOS.Z_anue            << " ";  // Electron antineutrino energy per baryon [MeV/baryon]
   os << out->nuEOS.Z_nux             << " ";  // Heavy (anti)neutrino energy per baryon [MeV/baryon]
-  os << out->chem_pot.mu_p - out->mb << " ";  // Proton chemical potential wrt baryon (neutron) mass [MeV]
-  os << out->chem_pot.mu_n - out->mb << " ";  // Neutron chemical potential wrt baryon (neutron) mass [MeV]
-  os << out->chem_pot.mu_e           << " ";  // Electron chemical potential (with rest mass) [MeV]
+  os << out->chem_pot[0] - out->mb << " ";  // Proton chemical potential wrt baryon (neutron) mass [MeV]
+  os << out->chem_pot[1] - out->mb << " ";  // Neutron chemical potential wrt baryon (neutron) mass [MeV]
+  os << out->chem_pot[2]           << " ";  // Electron chemical potential (with rest mass) [MeV]
   os << std::endl;
   
   return;
@@ -52,14 +52,14 @@ int main () {
 
   /* Initialize global EOS class
 
-  Constructor -> EOS_assembled(const int id_eos, const bool el_flag, const bool mu_flag, std::string BarTableName)
+  Constructor -> MuEOSClass(const int id_eos, const bool el_flag, const bool mu_flag, std::string BarTableName)
 
   Inputs:
    - id_EOS: method for EOS computation (1: interpolation, 2: on-the-fly)
    - el_flag: flag for activating electrons
    - mu_flag: flag for activating muons
    - BarTableName: path of baryon EOS table  */
-  EOS_assembled eos(2, true, false, BarTableName);      
+  MuEOSClass eos(id_test, false, BarTableName);      
 
   /* Define name of output table */
   std::string out_table = "table_comp_without_mu.txt";
@@ -126,7 +126,7 @@ int main () {
   /* Choose step size for iteration over input variable arrays */
   const int di = 1, dj = 1, dk = 3; //di: nb step, dj: T step, dk: ye step
 
-  FullEOSOutput eos_out;
+  EOSstruct eos_out;
 
   /* Write table WITHOUT MUONS to output file */
   std::cout << "# id_n, id_t, id_ye, nb [1/fm3], T [MeV], Ye [#/baryon]" << std::endl;
@@ -141,7 +141,7 @@ int main () {
         std::cout << nb << "  " << T << "  " << Y[0] << std::endl;
 
         eos_out = eos.compute_full_EOS(nb, T, Y);
-		    print_EOS_output(&eos_out, Iout);
+		    print_EOS_output(nb, T, Y, &eos_out, Iout);
       }
     }
   }

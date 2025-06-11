@@ -1,39 +1,46 @@
-#ifndef EOS_SPECIES_HPP
-#define EOS_SPECIES_HPP
+#ifndef MUEOSLIBRARY_SRC_EOS_SPECIES_HPP_
+#define MUEOSLIBRARY_SRC_EOS_SPECIES_HPP_
 
 #include <cstddef>
 #include <string>
+
+#include "mueosclass.hpp"
+#include "eos_species/eos_leptons.hpp"
 
 /*============================================================================*/
 
 // file: eos_neutrinos.cpp
 
 class EOS_neutrinos {
+  private:
+    double Y_nu[5], Z_nu[5];
+    double P_nu[5], s_nu[5];
+    double eta_nu[5];
+
   public:
-    
-    // Number fraction of neutrinos (yn)
-    double nu_fraction(const double nb, const double T, const double eta);
+    EOS_neutrinos() {
+      eta_nu[4] = 0;
+    };
 
-    // Number fraction of antineutrinos (yan)
-    double anu_fraction(const double nb, const double T, const double eta);
+    void NeutrinoEOS(const double nb, const double T, const double* chem_pot);
 
-    // Energy per baryon of neutrinos (zn)
-    double nu_energy(const double nb, const double T, const double eta);
+    // Number fraction of neutrinos
+    double GetNuNumberFraction(const int idx);
 
-    // Energy per baryon of antineutrinos (zan)
-    double anu_energy(const double nb, const double T, const double eta);
+    // Energy per baryon of neutrinos
+    double GetNuEnergyFraction(const int idx);
 
-    // Pressure per baryon of neutrinos (pn)
-    double nu_pressure(const double nb, const double T, const double eta);
+    // Pressure per baryon of neutrinos
+    double GetNuPressure(const int idx);
 
-    // Pressure per baryon of antineutrinos (pan)
-    double anu_pressure(const double nb, const double T, const double eta);
+    // Entropy per baryon of neutrinos
+    double GetNuEntropy(const int idx);
 
-    // Entropy per baryon of neutrinos (sn)
-    double nu_entropy(const double nb, const double T, const double eta);
+    // Degeneracy parameter of neutrinos
+    double GetNuDegeneracyParameter(const int idx);
 
-    // Entropy per baryon of antineutrinos (san)
-    double anu_entropy(const double nb, const double T, const double eta);
+  public:
+    bool m_mu_active;
 };
 
 /*============================================================================*/
@@ -41,23 +48,29 @@ class EOS_neutrinos {
 // file: eos_photons.cpp
 class EOS_photons {
   public:
+    void PhotonEOS(const double T);
+
     //number density
-    double RadNumberDensity(double T);
+    double GetPhotonNumberDensity();
 
     //internal energy (per unit volume)
-    double RadEnergy(double T);
+    double GetPhotonEnergy();
 
     //pressure 
-    double RadPressure(double T);
+    double GetPhotonPressure();
 
     //entropy
-    double RadEntropy(double T);
+    double GetPhotonEntropy();
 
     //pressure derivative wrt temperature
-    double RaddPdT(double T);
+    double GetPhotondPdT();
 
     //entropy derivative wrt temperature
-    double RaddsdT(double T);
+    double GetPhotondsdT();
+
+   private:
+    double n_ph, e_ph, P_ph, s_ph;
+    double dPdt_ph, dsdt_ph;
 };
 
 /*============================================================================*/
@@ -91,38 +104,41 @@ class EOS_baryons {
     /// Destructor
     ~EOS_baryons();
 
-    /// Calculate the energy density using.
-    double BarEnergy(double n, double T, double *Y);
+    /// Calculate full baryonic EOS using.
+    void BaryonEOS(double n, double T, double *Y);
+
+     /// Calculate the energy density using.
+    double GetBaryonEnergy();
 
     /// Calculate the pressure using.
-    double BarPressure(double n, double T, double *Y);
+    double GetBaryonPressure();
 
     /// Calculate the entropy per baryon using.
-    double BarEntropy(double n, double T, double *Y);
+    double GetBaryonEntropy();
 
     /// Calculate the relativistic proton chemical potential using.
-    double ProtonChemicalPotential(double n, double T, double *Y);
+    double GetProtonChemicalPotential();
 
     /// Calculate the relativistic neutron chemical potential using.
-    double NeutronChemicalPotential(double n, double T, double *Y);
+    double GetNeutronChemicalPotential();
 
     /// Calculate the fraction of alpha particles using.
-    double AlphaFraction(double n, double T, double *Y);
+    double GetAlphaFraction();
 
     /// Calculate the fraction of heavy nuclei using.
-    double HeavyFraction(double n, double T, double *Y);
+    double GetHeavyFraction();
 
     /// Calculate the fraction of free neutrons using.
-    double NeutronFraction(double n, double T, double *Y);
+    double GetNeutronFraction();
 
     /// Calculate the fraction of free protons using.
-    double ProtonFraction(double n, double T, double *Y);
+    double GetProtonFraction();
 
     /// Calculate the sound speed derivatives using.
-    double BardPdn(double n, double T, double *Y);
-    double Bardsdn(double n, double T, double *Y);
-    double BardPdT(double n, double T, double *Y);
-    double BardsdT(double n, double T, double *Y);
+    double GetBaryondPdn();
+    double GetBaryondsdn();
+    double GetBaryondPdT();
+    double GetBaryondsdT(); 
 
   public:
     /// Reads the table file.
@@ -162,19 +178,20 @@ class EOS_baryons {
   private:
     // @TODO: add action for interpolation outside the table range
     /// Low level evaluation function, not intended for outside use
-    double eval_at_nty(int vi, double n, double T, double Yq) const;
+    double eval_at_nty(int vi, double n, double T, double Yq);
     /// Low level evaluation function, not intended for outside use
-    double eval_at_lnty(int vi, double ln, double lT, double Yq) const;
+    double eval_at_lnty(int vi, double ln, double lT, double Yq);
     /// Low level evaluation function, not intended for outside use
     double eval_at_nty_new(int vi, double n, double T, double Yq) const;
+    double interp_3d(int iv) const;
 
-  public:
+  private:
     /// Evaluate interpolation weight for density
-    void weight_idx_ln(double *w0, double *w1, int *in, double log_n) const;
+    void weight_idx_ln(double log_n);
     /// Evaluate interpolation weight for composition
-    void weight_idx_yq(double *w0, double *w1, int *iy, double yq) const;
+    void weight_idx_yq(double yq);
     /// Evaluate interpolation weight for temperature
-    void weight_idx_lt(double *w0, double *w1, int *it, double log_t) const;
+    void weight_idx_lt(double log_t);
 
   public:
     // Inverse of table spacing
@@ -193,10 +210,60 @@ class EOS_baryons {
 
   private:
     double m_bar;
+    int in, iy, it;
+    double wn0, wn1, wy0, wy1, wt0, wt1;
+
+    double e_bar, P_bar, s_bar;
+    double mu_bar[2];
+    double Y_comp[4];
+    double der_bar[4];
 
     bool m_initialized;
 };
 
 /*============================================================================*/
 
-#endif //EOS_SPECIES_HPP
+class MuEOSClass : public EOS_baryons, public EOS_leptons<0>, public EOS_leptons<1>, public EOS_photons, public EOS_neutrinos {
+
+    public:
+    /// Constructor
+    MuEOSClass(const int id_eos, const bool mu_flag, std::string BarTableName);
+
+    /// Destructor
+    ~MuEOSClass();
+
+/*     /// Calculate the energy density using.
+    double Energy(double n, double T, double *Y);
+
+    /// Calculate the pressure using.
+    double Pressure(double n, double T, double *Y);
+
+    /// Calculate the entropy per baryon using.
+    double Entropy(double n, double T, double *Y);
+
+    /// Calculate the enthalpy per baryon using.
+    double Enthalpy(double n, double T, double *Y); 
+    
+    /// Calculate the sound speed using.
+    double SoundSpeed(double n, double T, double *Y);
+
+     /// Calculate the chemical potentials using.
+    ChemPotentials GetChemicalPotentials(double n, double T, double *Y);
+
+    /// Calculate the particle fractions using.
+    ParticleFractions GetParticleFractions(double n, double T, double *Y);
+
+    /// Calculate the fractions of baryons using.
+    ParticleFractions BaryonFractions(double n, double T, double *Y); */
+
+    /// Calculate the neutrino particle fractions using.
+    ParticleFractions NeutrinoFractions(double n, double T, double *Y, ChemPotentials *chem_pot);
+
+    /// Calculate the neutrino EOS quantities using.
+    NeutrinoEOSOutput compute_neutrino_EOS(double n, double T, double *Y, double chem_pot[4]);
+
+    /// Calculate the full EOS output using.
+    EOSstruct compute_full_EOS(double n, double T, double *Y);
+};
+
+#endif // MUEOSLIBRARY_SRC_EOS_SPECIES_HPP_

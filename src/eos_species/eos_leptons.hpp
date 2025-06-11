@@ -1,8 +1,5 @@
-#ifndef EOS_LEPTONS_HPP
-#define EOS_LEPTONS_HPP
-
-//! \file eos_leptons.hpp
-//  \brief Implementation of EOS_leptons
+#ifndef MUEOSLIBRARY_SRC_EOS_LEPTONS_HPP_
+#define MUEOSLIBRARY_SRC_EOS_LEPTONS_HPP_
 
 #include <algorithm>
 #include <cassert>
@@ -15,9 +12,8 @@
 #include <fstream>
 #include <array>
 
-#include "../helmholtz_eos/helmholtz_eos.hpp"
-
-using namespace std; 
+#include "mueosclass.hpp"
+#include "helmholtz_eos/helmholtz_eos.hpp"
 
 template <int idx_lep>
 class EOS_leptons {
@@ -52,9 +48,6 @@ class EOS_leptons {
     double * m_log_tl;
     double * m_lep_table;
 
-    //const int idx_lep  = 0;
-    //const int idx_lep = 1;
-
     // Table size
     int m_nl, m_ntl;
 
@@ -86,153 +79,137 @@ class EOS_leptons {
       }
     }
 
-    /// Calculate the number density of leptons using.
+
+    /// Calculate the full leptonic EOS using.
     template <int id_EOS>
-    double LepNumberDensity(double n, double T, double *Y) {
-      if (m_lep_active) {
-        if constexpr(id_EOS == 1) {
-          assert(m_lep_initialized);
-          return exp(eval_lep_at_nty(IL_N, n, T, Y[idx_lep]));
-        } else if constexpr(id_EOS == 2) {
-          return eos_helm_full(n*Y[idx_lep], T, idx_lep).nl;
-        }
-      } else {
-        return 0.;
+    void LeptonEOS(double n, double T, double *Y) {
+      if (!m_lep_active) {
+        n_lep = 0.;
+        e_lep = 0.;
+        P_lep = 0.;
+        s_lep = 0.;
+        mu_lep = 0.;
+        der_lep[0] = 0.;
+        der_lep[1] = 0.;
+        der_lep[2] = 0.;
+        der_lep[3] = 0.;
+        return;
+       }
+
+      if constexpr(id_EOS == 0) {
+        assert(m_lep_initialized);
+        weight_idx_lnl(log(n * Y[idx_lep]));
+        weight_idx_ltl(log(T));
+
+        n_lep = exp(interp_2d(IL_N));
+        e_lep = exp(interp_2d(IL_E)) + exp(interp_2d(IA_E));
+        P_lep = exp(interp_2d(IL_P)) + exp(interp_2d(IA_P));
+        s_lep = exp(interp_2d(IL_S)) + exp(interp_2d(IA_S));
+        mu_lep = interp_2d(IL_MU);
+        der_lep[0] = interp_2d(ID_DPDN) * Y[idx_lep];
+        der_lep[1] = interp_2d(ID_DSDN) * Y[idx_lep] / n - s_lep / (n*n);
+        der_lep[2] = interp_2d(ID_DPDT);
+        der_lep[3] = interp_2d(ID_DSDT) / n;
+
+
+      } else if constexpr(id_EOS == 1) {
+        assert(m_lep_initialized);
+        
+        const double eta = eval_lep_at_nty(0, n, T, Y[idx_lep]);
+
+        const double theta = T / mL[idx_lep];
+        const double a_eta = - (eta + 2. / theta);
+
+        GFDs FD;
+
+        FD.f12   = compute_res(eta,   theta, 0.5); // k = 1/2
+        FD.f32   = compute_res(eta,   theta, 1.5); // k = 3/2      
+        FD.a_f12 = compute_res(a_eta, theta, 0.5); // k = 1/2
+        FD.a_f32 = compute_res(a_eta, theta, 1.5); // k = 3/2
+
+        HelmEOSOutput tmp = eos_helm_from_eta(eta, T, idx_lep, &FD);
+        HelmEOSDer tmp_der = der_cs2_from_eta(eta, T, idx_lep);
+
+        n_lep = tmp.nl;
+        e_lep = tmp.el + tmp.a_el;
+        P_lep = tmp.pl + tmp.a_pl;
+        s_lep = tmp.sl + tmp.a_sl;
+        mu_lep = tmp.mul;
+        der_lep[0] = tmp_der.dPdn * Y[idx_lep];
+        der_lep[1] = tmp_der.dsdn * Y[idx_lep] / n - s_lep / (n*n);
+        der_lep[2] = tmp_der.dPdt;
+        der_lep[3] = tmp_der.dsdt / n;
+       
+      } else if constexpr(id_EOS == 2) {
+
+        HelmEOSOutput tmp = eos_helm_full(n*Y[idx_lep], T, idx_lep);
+
+        double eta = (tmp.mul - mL[idx_lep]) / T;
+
+        HelmEOSDer tmp_der = der_cs2_from_eta(eta, T, idx_lep);
+
+        n_lep = tmp.nl;
+        e_lep = tmp.el + tmp.a_el;
+        P_lep = tmp.pl + tmp.a_pl;
+        s_lep = tmp.sl + tmp.a_sl;
+        mu_lep = tmp.mul;
+        der_lep[0] = tmp_der.dPdn * Y[idx_lep];
+        der_lep[1] = tmp_der.dsdn * Y[idx_lep] / n - s_lep / (n*n);
+        der_lep[2] = tmp_der.dPdt;
+        der_lep[3] = tmp_der.dsdt / n;
+
       }
+      return;
     }
 
-    /// Calculate the number density of antileptons using.
-    template <int id_EOS>
-    double AntiLepNumberDensity(double n, double T, double *Y) {
-      if (m_lep_active) {
-        //assert(m_lep_initialized);
-        //return exp(eval_lep_at_nty(IA_N, n, T, Y[idx_lep]));
-        return LepNumberDensity<id_EOS>(n, T, Y) - n*Y[idx_lep];
-      } else {
-        return 0.;
-      }
+// Calculate the number density of leptons using.
+    double GetLeptonNumberDensity() {
+      return n_lep;
     }
+
+    // Calculate the number density of antileptons using.
+    double GetAntiLeptonNumberDensity(double n, double* Y) {
+      return n_lep - n * Y[idx_lep];
+    } 
 
     /// Calculate the internal energy density of leptons using.
-    template <int id_EOS>
-    double LepEnergy(double n, double T, double *Y) {
-      if (m_lep_active) {
-        if constexpr(id_EOS == 1) {
-            assert(m_lep_initialized);
-            return exp(eval_lep_at_nty(IL_E, n, T, Y[idx_lep])) + exp(eval_lep_at_nty(IA_E, n, T, Y[idx_lep]));
-        } else if constexpr(id_EOS == 2) {
-          return eos_helm_full(n*Y[idx_lep], T, idx_lep).el + eos_helm_full(n*Y[idx_lep], T, idx_lep).a_el; 
-        }
-      } else {
-        return 0.;
-      }
+    double GetLeptonEnergy() {
+      return e_lep;
     }
 
     /// Calculate the pressure of leptons using.
-    template <int id_EOS>
-    double LepPressure(double n, double T, double *Y) {
-      if (m_lep_active) {
-        if constexpr(id_EOS == 1) {
-            assert(m_lep_initialized);
-            return exp(eval_lep_at_nty(IL_P, n, T, Y[idx_lep])) + exp(eval_lep_at_nty(IA_P, n, T, Y[idx_lep]));
-        } else if constexpr(id_EOS == 2) {
-            return eos_helm_full(n*Y[idx_lep], T, idx_lep).pl + eos_helm_full(n*Y[idx_lep], T, idx_lep).a_pl;
-        }
-      } else {
-        return 0.;
-      }
+    double GetLeptonPressure() {
+      return P_lep;
     }
 
     /// Calculate the entropy density of leptons using.
-    template <int id_EOS>
-    double LepEntropy(double n, double T, double *Y) {
-      if (m_lep_active) {
-        if constexpr(id_EOS == 1) {
-            assert(m_lep_initialized);
-            return exp(eval_lep_at_nty(IL_S, n, T, Y[idx_lep])) + exp(eval_lep_at_nty(IA_S, n, T, Y[idx_lep]));
-        } else if constexpr(id_EOS == 2) {
-            return eos_helm_full(n*Y[idx_lep], T, idx_lep).sl + eos_helm_full(n*Y[idx_lep], T, idx_lep).a_sl;
-        }
-      } else {
-        return 0.;
-      }
+    double GetLeptonEntropy() {
+      return s_lep;
     }
 
     /// Calculate the chemical potential of leptons using.
-    template <int id_EOS>
-    double LepChemicalPotential(double n, double T, double *Y) {
-      if (m_lep_active) {
-        if constexpr(id_EOS == 1) {
-            assert(m_lep_initialized);
-            return eval_lep_at_nty(IL_MU, n, T, Y[idx_lep]);
-        } else if constexpr(id_EOS == 2) {
-            HelmEOSOutput tmp = eos_helm_full(n*Y[idx_lep], T, idx_lep);
-
-            return tmp.mul;
-        }
-      } else {
-        return 0.;
-      }
+    double GetLeptonChemicalPotential() {
+      return mu_lep;
     }
 
     /// Calculate the sound speed derivatives using.
-    template <int id_EOS>
-    double LdPdn(double n, double T, double *Y) {
-      if (m_lep_active) {
-        if constexpr(id_EOS == 1) {
-            assert(m_lep_initialized);
-            return eval_lep_at_nty(ID_DPDN, n, T, Y[idx_lep])*Y[idx_lep];
-        } else if constexpr(id_EOS == 2) {
-            return der_cs2_num(n*Y[idx_lep], T, idx_lep).dPdn * Y[idx_lep];
-	      }  
-      } else {
-	      return 0.;
-      }
+    double GetLeptondPdn() {
+      return der_lep[0];
     }
 
-    template <int id_EOS>
-    double Ldsdn(double n, double T, double *Y) {
-      if (m_lep_active) {
-        if constexpr(id_EOS == 1) {
-            assert(m_lep_initialized);
-            return eval_lep_at_nty(ID_DSDN, n, T, Y[idx_lep]) * Y[idx_lep] / n - LepEntropy<1>(n, T, Y) / (n*n);
-        } else if constexpr(id_EOS == 2) {
-            return der_cs2_num(n*Y[idx_lep], T, idx_lep).dsdn * Y[idx_lep] / n - LepEntropy<2>(n, T, Y) / (n*n);
-	      }
-      } else {
-	      return 0.;
-      }
+    double GetLeptondsdn() {
+  	      return der_lep[1];
     }
     
-    template <int id_EOS>
-    double LdPdt(double n, double T, double *Y) {
-      if (m_lep_active) {
-        if constexpr(id_EOS == 1) {
-            assert(m_lep_initialized);
-            return eval_lep_at_nty(ID_DPDT, n, T, Y[idx_lep]);
-        } else if constexpr(id_EOS == 2) {
-            return der_cs2_num(n*Y[idx_lep], T, idx_lep).dPdt;
-	      }
-      } else {
-	      return 0.;
+    double GetLeptondPdt() {
+	      return der_lep[2];
       }
-    }
     
-    template <int id_EOS>
-    double Ldsdt(double n, double T, double *Y) {
-      if (m_lep_active) {
-        if constexpr(id_EOS == 1) {
-            assert(m_lep_initialized);
-            return eval_lep_at_nty(ID_DSDT, n, T, Y[idx_lep]) / n;
-        } else if constexpr(id_EOS == 2) {
-            return der_cs2_num(n*Y[idx_lep], T, idx_lep).dsdt / n;
-	      }
-      } else {
-	      return 0.;
-      }
+    double GetLeptondsdt() {
+	      return der_lep[3];
     }
 
-    /// Calculate the full leptonic EOS using.
+/*     /// Calculate the full leptonic EOS using.
     template <int id_EOS>
     HelmEOSOutput ComputeFullLepEOS(double n, double T, double *Y) {
       HelmEOSOutput out = {0.0};
@@ -245,16 +222,16 @@ class EOS_leptons {
           return eos_helm_full(n*Y[idx_lep], T, idx_lep);
         }
       }
-    }
- 
+    } 
+  */
 
  
   public:
     /// Reads the table file.
-    void ReadLepTableFromFile(std::string fname) {
+    void ReadFullLepTableFromFile(std::string fname) {
       // Open input file
       // -------------------------------------------------------------------------
-      ifstream EOSinput;
+      std::ifstream EOSinput;
       EOSinput.open(fname);
 
       if (!EOSinput) {
@@ -265,13 +242,13 @@ class EOS_leptons {
 
       // Get dataset sizes
       // -------------------------------------------------------------------------
-      string EOSline;
+      std::string EOSline;
       getline(EOSinput, EOSline);
-      stringstream s1(EOSline);
+      std::stringstream s1(EOSline);
       s1 >> m_nl;
 
       getline(EOSinput, EOSline);
-      stringstream s2(EOSline);
+      std::stringstream s2(EOSline);
       s2 >> m_ntl;
 
       // Allocate memory
@@ -285,7 +262,7 @@ class EOS_leptons {
       // Read nb, t, yq
       // -------------------------------------------------------------------------
       getline(EOSinput, EOSline);
-      stringstream s3(EOSline);
+      std::stringstream s3(EOSline);
       for (int in = 0; in < m_nl; ++in) {
         s3 >> number;
         m_log_nl[in] = log(pow(10.,number));
@@ -293,7 +270,7 @@ class EOS_leptons {
       m_id_log_nl = 1.0/(m_log_nl[1] - m_log_nl[0]);
 
       getline(EOSinput, EOSline);
-      stringstream s4(EOSline);
+      std::stringstream s4(EOSline);
       for (int it = 0; it < m_ntl; ++it) {
         s4 >> number;
         m_log_tl[it] = log(pow(10.,number));
@@ -305,7 +282,7 @@ class EOS_leptons {
       // -------------------------------------------------------------------------
       for (int in = 0; in < m_nl; ++in) {
         getline(EOSinput, EOSline);
-        stringstream s5(EOSline);
+        std::stringstream s5(EOSline);
           for (int it = 0; it < m_ntl; ++it) {
             s5 >> number;
             m_lep_table[lep_index(IL_N, in, it)] = log(number);
@@ -313,7 +290,7 @@ class EOS_leptons {
     
       for (int in = 0; in < m_nl; ++in) {
         getline(EOSinput, EOSline);
-        stringstream s5(EOSline);
+        std::stringstream s5(EOSline);
           for (int it = 0; it < m_ntl; ++it) {
             s5 >> number;
             m_lep_table[lep_index(IA_N, in, it)] = log(number);
@@ -321,7 +298,7 @@ class EOS_leptons {
     
       for (int in = 0; in < m_nl; ++in) {
         getline(EOSinput, EOSline);
-        stringstream s5(EOSline);
+        std::stringstream s5(EOSline);
           for (int it = 0; it < m_ntl; ++it) {
             s5 >> number;
             m_lep_table[lep_index(IL_P, in, it)] = log(number);
@@ -329,7 +306,7 @@ class EOS_leptons {
     
       for (int in = 0; in < m_nl; ++in) {
         getline(EOSinput, EOSline);
-        stringstream s5(EOSline);
+        std::stringstream s5(EOSline);
           for (int it = 0; it < m_ntl; ++it) {
             s5 >> number;
             m_lep_table[lep_index(IA_P, in, it)] = log(number);
@@ -338,7 +315,7 @@ class EOS_leptons {
 
       for (int in = 0; in < m_nl; ++in) {
         getline(EOSinput, EOSline);
-        stringstream s5(EOSline);
+        std::stringstream s5(EOSline);
           for (int it = 0; it < m_ntl; ++it) {
             s5 >> number;
             m_lep_table[lep_index(IL_E, in, it)] = log(number);
@@ -346,7 +323,7 @@ class EOS_leptons {
     
       for (int in = 0; in < m_nl; ++in) {
         getline(EOSinput, EOSline);
-        stringstream s5(EOSline);
+        std::stringstream s5(EOSline);
           for (int it = 0; it < m_ntl; ++it) {
             s5 >> number;
             m_lep_table[lep_index(IA_E, in, it)] = log(number);
@@ -354,7 +331,7 @@ class EOS_leptons {
     
       for (int in = 0; in < m_nl; ++in) {
         getline(EOSinput, EOSline);
-        stringstream s5(EOSline);
+        std::stringstream s5(EOSline);
           for (int it = 0; it < m_ntl; ++it) {
             s5 >> number;
             m_lep_table[lep_index(IL_S, in, it)] = log(number);
@@ -362,7 +339,7 @@ class EOS_leptons {
     
       for (int in = 0; in < m_nl; ++in) {
         getline(EOSinput, EOSline);
-        stringstream s5(EOSline);
+        std::stringstream s5(EOSline);
           for (int it = 0; it < m_ntl; ++it) {
             s5 >> number;
             m_lep_table[lep_index(IA_S, in, it)] = log(number);
@@ -370,7 +347,7 @@ class EOS_leptons {
     
       for (int in = 0; in < m_nl; ++in) {
         getline(EOSinput, EOSline);
-        stringstream s5(EOSline);
+        std::stringstream s5(EOSline);
           for (int it = 0; it < m_ntl; ++it) {
             s5 >> number;
             m_lep_table[lep_index(IL_MU, in, it)] = number;
@@ -378,7 +355,7 @@ class EOS_leptons {
     
       for (int in = 0; in < m_nl; ++in) {
         getline(EOSinput, EOSline);
-        stringstream s5(EOSline);
+        std::stringstream s5(EOSline);
           for (int it = 0; it < m_ntl; ++it) {
             s5 >> number;
             m_lep_table[lep_index(ID_DPDN, in, it)] = number;
@@ -386,7 +363,7 @@ class EOS_leptons {
     
       for (int in = 0; in < m_nl; ++in) {
         getline(EOSinput, EOSline);
-        stringstream s5(EOSline);
+        std::stringstream s5(EOSline);
           for (int it = 0; it < m_ntl; ++it) {
             s5 >> number;
             m_lep_table[lep_index(ID_DSDN, in, it)] = number;
@@ -394,7 +371,7 @@ class EOS_leptons {
     
       for (int in = 0; in < m_nl; ++in) {
         getline(EOSinput, EOSline);
-        stringstream s5(EOSline);
+        std::stringstream s5(EOSline);
           for (int it = 0; it < m_ntl; ++it) {
             s5 >> number;
             m_lep_table[lep_index(ID_DPDT, in, it)] = number;
@@ -402,7 +379,7 @@ class EOS_leptons {
     
       for (int in = 0; in < m_nl; ++in) {
         getline(EOSinput, EOSline);
-        stringstream s5(EOSline);
+        std::stringstream s5(EOSline);
           for (int it = 0; it < m_ntl; ++it) {
             s5 >> number;
             m_lep_table[lep_index(ID_DSDT, in, it)] = number;
@@ -416,6 +393,77 @@ class EOS_leptons {
       m_lep_initialized = true;
     }
     
+
+      /// Reads the table file.
+    void ReadEtaLepTableFromFile(std::string fname) {
+      // Open input file
+      // -------------------------------------------------------------------------
+      std::ifstream EOSinput;
+      EOSinput.open(fname);
+
+      if (!EOSinput) {
+        std::cout << "Lepton EOS table not found!: id_lep = " << idx_lep << std::endl;
+        std::cout << "Lepton EOS tables can be generated by running 'make lep_table' in the parent directory" << std::endl;
+        exit(EXIT_FAILURE);
+      }
+
+      // Get dataset sizes
+      // -------------------------------------------------------------------------
+      std::string EOSline;
+      getline(EOSinput, EOSline);
+      std::stringstream s1(EOSline);
+      s1 >> m_nl;
+
+      getline(EOSinput, EOSline);
+      std::stringstream s2(EOSline);
+      s2 >> m_ntl;
+
+      // Allocate memory
+      // -------------------------------------------------------------------------
+      m_log_nl   = new double[m_nl];
+      m_log_tl   = new double[m_ntl];
+      m_lep_table = new double[m_nl*m_ntl];
+
+      double number;
+
+      // Read nb, t, yq
+      // -------------------------------------------------------------------------
+      getline(EOSinput, EOSline);
+      std::stringstream s3(EOSline);
+      for (int in = 0; in < m_nl; ++in) {
+        s3 >> number;
+        m_log_nl[in] = log(pow(10.,number));
+      }
+      m_id_log_nl = 1.0/(m_log_nl[1] - m_log_nl[0]);
+
+      getline(EOSinput, EOSline);
+      std::stringstream s4(EOSline);
+      for (int it = 0; it < m_ntl; ++it) {
+        s4 >> number;
+        m_log_tl[it] = log(pow(10.,number));
+      }
+      m_id_log_tl = 1.0/(m_log_tl[1] - m_log_tl[0]);
+
+
+      // Read other thermodynamics quantities
+      // -------------------------------------------------------------------------   
+      for (int in = 0; in < m_nl; ++in) {
+        getline(EOSinput, EOSline);
+        std::stringstream s5(EOSline);
+          for (int it = 0; it < m_ntl; ++it) {
+            s5 >> number;
+            m_lep_table[lep_index(0, in, it)] = number;
+        }
+      }
+    
+      // Cleanup
+      // -------------------------------------------------------------------------
+      //delete[] s5;
+      EOSinput.close();
+    
+      m_lep_initialized = true;
+    }
+
     /// Get the raw number density
     double const * GetRawLepLogNumberDensity() const {
       return m_log_nl;
@@ -448,34 +496,31 @@ class EOS_leptons {
 
   private:
     /// Low level evaluation function, not intended for outside use
-    double eval_lep_at_nty(int vi, double n, double T, double Yl) const {
+    double eval_lep_at_nty(int vi, double n, double T, double Yl) {
       // @FIXME
       if (Yl == 0.) return 0.;
       return eval_lep_at_lnty(vi, log(n*Yl), log(T));
     }
     
     /// Evaluate interpolation weight for lepton density
-    void weight_idx_lnl(double *w0, double *w1, int *in, double log_n) const {
-      *in = (log_n - m_log_nl[0])*m_id_log_nl;
-      *w1 = (log_n - m_log_nl[*in])*m_id_log_nl;
-      *w0 = 1.0 - (*w1);
+    void weight_idx_lnl(double log_n) {
+      in = (log_n - m_log_nl[0])*m_id_log_nl;
+      wn1 = (log_n - m_log_nl[in])*m_id_log_nl;
+      wn0 = 1.0 - wn1;
     }
     
     /// Evaluate interpolation weight for lepton temperature
-    void weight_idx_ltl(double *w0, double *w1, int *it, double log_t) const {
-      *it = (log_t - m_log_tl[0])*m_id_log_tl;
-      *w1 = (log_t - m_log_tl[*it])*m_id_log_tl;
-      *w0 = 1.0 - (*w1);
+    void weight_idx_ltl(double log_t) {
+      it = (log_t - m_log_tl[0])*m_id_log_tl;
+      wt1 = (log_t - m_log_tl[it])*m_id_log_tl;
+      wt0 = 1.0 - wt1;
     }
 
     // @TODO: add action for interpolation outside the table range
     /// Low level evaluation function, not intended for outside use
-    double eval_lep_at_lnty(int iv, double log_n, double log_t) const {
-      int in, it;
-      double wn0, wn1, wt0, wt1;
-    
-      weight_idx_lnl(&wn0, &wn1, &in, log_n);
-      weight_idx_ltl(&wt0, &wt1, &it, log_t);
+    double eval_lep_at_lnty(int iv, double log_n, double log_t) {   
+      weight_idx_lnl(log_n);
+      weight_idx_ltl(log_t);
     
       return
         wn0 * (wt0 * m_lep_table[lep_index(iv, in+0, it+0)]   +
@@ -484,18 +529,29 @@ class EOS_leptons {
                wt1 * m_lep_table[lep_index(iv, in+1, it+1)]);
     }
 
+   // @TODO: add action for interpolation outside the table range
+    /// Low level evaluation function, not intended for outside use
+    double interp_2d(int iv) const {
+      return
+        wn0 * (wt0 * m_lep_table[lep_index(iv, in+0, it+0)]   +
+               wt1 * m_lep_table[lep_index(iv, in+0, it+1)])  +
+        wn1 * (wt0 * m_lep_table[lep_index(iv, in+1, it+0)]   +
+               wt1 * m_lep_table[lep_index(iv, in+1, it+1)]);
+    }
+
+    int in, it;
+    double wn0, wn1, wt0, wt1;
 
     /// Low level evaluation function for entire EOS, not intended for outside use
     HelmEOSOutput eval_all_lep_at_lnty(double log_n, double log_t) const {
-      int in, it;
-      double wn0, wn1, wt0, wt1;
+
 
       std::array<double,EOS_leptons::NVARS> tmp;
 
       HelmEOSOutput out;
 
-      weight_idx_lnl(&wn0, &wn1, &in, log_n);
-      weight_idx_ltl(&wt0, &wt1, &it, log_t);
+      weight_idx_lnl(log_n);
+      weight_idx_ltl(log_t);
 
       for (int iv=0; iv<NVARS; iv++) {
         tmp[iv] = wn0 * (wt0 * m_lep_table[lep_index(iv, in+0, it+0)]   +
@@ -517,7 +573,12 @@ class EOS_leptons {
       return out;
     }
 
+private:
+  double e_lep, s_lep, P_lep;
+  double n_lep;
+  double mu_lep;
+  double der_lep[4];
+
 };
 
-
-#endif //EOS_LEPTONS_HPP
+#endif // MUEOSLIBRARY_SRC_EOS_LEPTONS_HPP_

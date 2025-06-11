@@ -5,8 +5,6 @@
 #include "../../helmholtz_eos/helmholtz_eos.hpp"
 #include "../../fermi_integrals/fermi_integrals.hpp"
 
-using namespace constants;
-
 /* 0: electrons, 1: muons */
 const double eta_min[2] = {-2.3e+04, -2.3e+04}; // minimum eta for root-finding bracketing
 const double eta_max[2] = {+2.3e+04, +5.0e+04}; //1.3e+04 // maximum eta for root-finding bracketing
@@ -59,27 +57,27 @@ double find_guess_eta(double nLep, double T, const int id_L) {
   // @TODO: fix units and computation of constants
   /* Electrons */
   if (id_L == 0) { //if constexpr(species == 0) {
-    const double t = T/kB; //temp in K
+    const double t = T/MEOS_kB; //temp in K
     const double nfm = nLep*1.e-39; //number density in fm^{-3}
-    const double pF = h*c*pow(3.*nLep/(8.*pi),1./3.); //[MeV]
+    const double pF = MEOS_h*MEOS_c*pow(3.*nLep/(8.*MEOS_pi),1./3.); //[MeV]
 
     // Find the guess
     if ((t<=1.e10) && (nfm <= 1.e-17)) { //classical NR
-      nq = pow(2.*pi*me*T/(h*h*c*c),1.5); //cm^{-3}
+      nq = pow(2.*MEOS_pi*MEOS_me*T/(MEOS_h*MEOS_h*MEOS_c*MEOS_c),1.5); //cm^{-3}
       return -log(fabs(2.*nq/nLep));
     } else if ((t<=1.e10) && (nfm>1.e-17) && (nfm <= 1.e-10)) { //degenerate NR
-      return (pF*pF/(2.*me*T)) - (me/T);
+      return (pF*pF/(2.*MEOS_me*T)) - (MEOS_me/T);
     } else if ((t<=1.e10) && (nfm>1.e-10)) { //degenerate UR
-      return (pF/T) - (me/T);
+      return (pF/T) - (MEOS_me/T);
     } else if (t>1.e10) {
-      nq = 8.*pi*pow(T/(h*c),3.); //classical UR
-      return -log(fabs(2.*nq/nLep)) - (me/T);
+      nq = 8.*MEOS_pi*pow(T/(MEOS_h*MEOS_c),3.); //classical UR
+      return -log(fabs(2.*nq/nLep)) - (MEOS_me/T);
     }
 
   /* Muons */
   } else if (id_L == 1) { //else if constexpr(species == 1) {
     // Find the guess
-    nq = pow(2.*pi*mmu*T/(h*h*c*c),1.5); //cm^{-3}
+    nq = pow(2.*MEOS_pi*MEOS_mmu*T/(MEOS_h*MEOS_h*MEOS_c*MEOS_c),1.5); //cm^{-3}
     return -log(fabs(2.*nq/nLep)); 
   }
 }
@@ -126,16 +124,23 @@ double rtsafe(const double nLep, const double T, const int id_L, GFDs *FD) {
       dxold = dx;
       dx = 0.5 * (xh - xl);
       rts = xl + dx;
-      if (xl == rts) return rts;
+      if (xl == rts) {
+        // std::cout << j << std::endl;
+	return rts;
+      }
     } else { // Change in root is negligible. Newton step acceptable. Take it.
       dxold = dx;
       dx = f/df;
       double temp = rts;
       rts -= dx;
-      if (temp == rts) return rts;
+      if (temp == rts) {
+        // std::cout << j << std::endl;
+	return rts;
+      }
     }
     if (fabs(dx) < xacc) {
       //std::cout << std::endl << "Num steps: " << j << std::endl;
+      // std::cout << j << std::endl;
       return rts; // Convergence criterion.
     }
 
