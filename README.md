@@ -19,14 +19,14 @@ Here is the list of the different particle species that the class can account fo
 
 ## Preliminary steps
   - Place the HDF5 file containing the baryonic EOS table (must be PyCompOSE output, see description above about baryonic EOS) in the `eos_table/baryons/`  folder.
-  - To compute the leptonic EOS through table interpolation, first generate the lepton EOS tables by running **`make lep_table`** in the parent directory.
+  - To compute the leptonic EOS through table interpolation, first generate the lepton EOS tables by compiling and running the **`lep_table`** with CMake.
 
 ## EOS class 
-The general-purpose EOS of dense matter is implemented through the C++ class named **`EOS_assembled`**, whose definition can be found in `src/eos_species/eos_assembled.cpp`
+The general-purpose EOS of dense matter is implemented through the C++ class named **`MuEOSClass`**, whose definition can be found in `src/eos_species/eos_species.cpp`
 
-The class can be initalized by calling the constrctor `EOS_assembled(const int id_eos, const bool el_flag, const bool mu_flag, std::string BarTableName)`, where `id_eos` is an index determining the way in which the leptonic EOS is computed (0: table interpolation, 1: on-the-fly calculation, see description above), `el_flag` (`mu_flag`) ia a boolean variable that can be set to switch on/off the inclusion of electrons (muons) and `BarTableName` is the name of the baryonic EOS table.
+The class can be initalized by calling the constrctor `MuEOSClass(const int id_eos, const bool mu_flag, std::string BarTableName)`, where `id_eos` is an index determining the way in which the leptonic EOS is computed (0: direct table interpolation, 1: eta interpolation, 2: on-the-fly calculation, see description above), `mu_flag` ia a boolean variable that can be set to switch on/off the inclusion of muons and `BarTableName` is the name of the baryonic EOS table.
 
-The EOS output is computed by calling the class member function `FullEOSOutput EOS_assembled::compute_full_EOS(double nb, double T, double *Y)`.<br>
+The EOS output is computed by calling the class member function `EOSstruct MuEOSClass::compute_full_EOS(double nb, double T, double *Y)`.<br>
 The input parameters are the following:
 ```c++
   - double nb               // Baryon number density [fm-3]
@@ -36,41 +36,33 @@ The input parameters are the following:
 
 **Warning:** always check that the EOS is called in a thermodynamic point that falls within the boundaries of the input tables!
 
-The EOS output is organized in the `FullEOSOutput` structure which contains the following fields (please note that chemical potentials are including the rest-mass contribution):
+The EOS output is organized in the `EOSstruct` structure which contains the following fields (please note that chemical potentials are including the rest-mass contribution):
 ```c++
-   - double rho                // Mass density [g/cm3]
-   - double nb                 // Baryon number density [1/fm3]
-   - double T                  // Temperature [MeV]
    - double mb                 // Baryon mass [MeV]
    - double e                  // Internal energy density (without neutrinos) [erg/cm3]
    - double P                  // Pressure (without neutrinos) [erg/cm3]
    - double s                  // Entropy per baryon (without neutrinos) [#/baryon]
-   - double chem_pot.mu_n      // Neutron chemical potential [MeV]
-   - double chem_pot.mu_p      // Proton chemical potential [MeV]
-   - double chem_pot.mu_e      // Electron chemical potential [MeV]
-   - double chem_pot.mu_m      // Muon chemical potential [MeV]
-   - double chem_pot.mu_nue    // Electron neutrino chemical potential [MeV] 
-   - double chem_pot.mu_num    // Muon neutrino chemical potential [MeV]
-   - double chem_pot.mu_nux    // Tau neutrino chemical potential [MeV]
-   - double Y_part.yh          // Heavy nuclei fraction [#/baryon]
-   - double Y_part.ya          // Alpha particle fraction [#/baryon]
-   - double Y_part.yn          // Neutron fraction [#/baryon]
-   - double Y_part.yp          // Proton fraction [#/baryon]
-   - double Y_part.ye          // Electron fraction [#/baryon]
-   - double Y_part.ym          // Muon fraction [#/baryon]
-   - double Y_part.ynue        // Electron neutrino fraction [#/baryon]
-   - double Y_part.yanue       // Electron antineutrino fraction [#/baryon]
-   - double Y_part.ynum        // Muon neutrino fraction [#/baryon]
-   - double Y_part.yanum       // Muon antineutrino fraction [#/baryon]
-   - double Y_part.ynux        // Tau (anti)neutrino fraction [#/baryon]
-   - double Y_part.yle         // Net electronic lepton fraction [#/baryons] (yle = ye + ynue - yanue)
-   - double Y_part.ylm         // Net muonic lepton fraction [#/baryon] (ylm = ym + ynum - yanum)
-   - double nuEOS.z_nue        // Electron neutrino energy per baryon [MeV/baryon]
-   - double nuEOS.z_anue       // Electron antineutrino energy per baryon [MeV/baryon]
-   - double nuEOS.z_num        // Muon neutrino energy per baryon [MeV/baryon]
-   - double nuEOS.z_anum       // Muon antineutrino energy per baryon [MeV/baryon]
-   - double nuEOS.z_nux        // Tau (anti)neutrino energy per baryon [MeV/baryon]
-   - double nuEOS.z_tot        // Total neutrino energy per baryon [MeV/baryon]
+   - double chem_pot[1]        // Neutron chemical potential [MeV]
+   - double chem_pot[0]        // Proton chemical potential [MeV]
+   - double chem_pot[2]        // Electron chemical potential [MeV]
+   - double chem_pot[3]        // Muon chemical potential [MeV]
+   - double comp[1]            // Heavy nuclei fraction [#/baryon]
+   - double comp[0]            // Alpha particle fraction [#/baryon]
+   - double comp[2]            // Neutron fraction [#/baryon]
+   - double comp[3]            // Proton fraction [#/baryon]
+   - double comp[4]            // Electron fraction [#/baryon]
+   - double comp[5]            // Muon fraction [#/baryon]
+   - double nuEOS.Y_nu[0]      // Electron neutrino fraction [#/baryon]
+   - double nuEOS.Y_nu[1]      // Electron antineutrino fraction [#/baryon]
+   - double nuEOS.Y_nu[2]       // Muon neutrino fraction [#/baryon]
+   - double nuEOS.Y_nu[3]      // Muon antineutrino fraction [#/baryon]
+   - double nuEOS.Y_nu[4]      // Tau (anti)neutrino fraction [#/baryon]
+   - double nuEOS.Z_nue        // Electron neutrino energy per baryon [MeV/baryon]
+   - double nuEOS.Z_anue       // Electron antineutrino energy per baryon [MeV/baryon]
+   - double nuEOS.Z_num        // Muon neutrino energy per baryon [MeV/baryon]
+   - double nuEOS.Z_anum       // Muon antineutrino energy per baryon [MeV/baryon]
+   - double nuEOS.Z_nux        // Tau (anti)neutrino energy per baryon [MeV/baryon]
+   - double nuEOS.Z_tot        // Total neutrino energy per baryon [MeV/baryon]
    - double nuEOS.s_nue        // Electron neutrino entropy per baryon [#/baryon]
    - double nuEOS.s_anue       // Electron antineutrino entropy per baryon [#/baryon]
    - double nuEOS.s_num        // Muon neutrino entropy per baryon [#/baryon]
@@ -82,7 +74,7 @@ The EOS output is organized in the `FullEOSOutput` structure which contains the 
 See `main.cpp` for an example on how to initialize the class and compute the full EOS output in a single thermodynamic point.
 
 ## Generating an output table: how to
-An example of code that generates output EOS tables by combining the contributions from the different species can be found at `output/generate_global_table.cpp`. The code can be compiled and run by running the command **`make output_table`** in the parent directory. The output file is saved in the `output/data/` directory. 
+An example of code that generates output EOS tables by combining the contributions from the different species can be found at `output/generate_global_table.cpp`. The code can be compiled and run using the **`output_table`** target of CMake. The output file is saved in the `output/data/` directory. 
 
 The contribution of muons can be switched on (off) by setting the boolean variable `with_mu` equal to `true` (`false`) at the beginning of the file.
 
